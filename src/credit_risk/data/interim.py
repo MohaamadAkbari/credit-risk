@@ -27,7 +27,7 @@ def shrink(df: pd.DataFrame) -> pd.DataFrame:
             # One fixed type for every chunk. float32 keeps ~7 significant digits:
             # fine for exploration, but Phase 3 features are built from the raw CSVs.
             df[c] = s.astype("float32")
-        elif s.dtype == "object":
+        elif pd.api.types.is_object_dtype(s) or pd.api.types.is_string_dtype(s):  # pandas 2 "object", pandas 3 "str"
             df[c] = s.astype("string")
     return df
 
