@@ -1,0 +1,56 @@
+# Economic assumptions for the decision policy. All amounts are a share of loan principal.
+# These are PLACEHOLDERS (see docs/decisions/0002-economic-assumptions.md).
+# Change values here; every profit number in the project reads from this file.
+
+unit: share_of_principal   # currency of the dataset is unknown
+
+margin_on_repaid_loan:
+  value: 0.12
+  test_range: [0.08, 0.18]
+  confidence: low
+  note: one article gives 12-18% annual net interest margin; bottom of range used
+
+loss_given_default:
+  value: 0.60
+  test_range: [0.50, 0.90]
+  confidence: medium
+  note: unsecured consumer loans quoted at 50-70% and 60-90% in two glossaries
+
+manual_review_cost:
+  value: 0.003
+  test_range: [0.001, 0.010]
+  confidence: low
+  note: no consumer-loan figure found; pure placeholder
+
+reviewer_catch_rate:        # share of defaults in the review band that a reviewer catches and declines
+  value: 0.30
+  test_range: [0.0, 0.60]
+  confidence: very_low
+  note: key unknown; experiment E3 finds the break-even value
+
+review_capacity:            # share of applications that can be manually reviewed
+  start_value: 0.05
+  sweep_range: [0.0, 0.15]
+  note: to be chosen from experiment E1, not fixed
+
+thin_file:
+  definition: no_record_in_bureau_table   # 14.3% of applications (D30)
+
+deployment:
+  cloud: aws                # D34
+
+derived:
+  break_even_pd: "margin / (margin + lgd)"   # about 0.167 with the values above
+
+simplifications:
+  exposure_at_default: full_principal     # conservative: balance really amortises
+  reviewer_wrongly_declines_good: false   # optimistic: real reviewers sometimes do
+
+guardrails:                 # D12 accepted; D13, D15, D16 proposed; D14 deferred until E4
+  min_profit_lift_vs_approve_all: 0.10    # D12
+  profit_vs_scorecard: reported_only      # reported with a confidence interval; not a pass/fail gate (D12)
+  max_default_rate_among_approved: 0.065
+  max_decline_rate: 0.10                  # decided after E4 whether it overrides the cutoff (D14) (preliminary: cutoff declines 10-11%)
+  min_group_approval_ratio: 0.80          # applies to approval rate and to approval among people who repay; groups: gender, age band
+  max_p99_latency_seconds: 1.0
+  reason_codes_per_decline: 4

@@ -1,0 +1,23 @@
+# Raw and derived data: never commit (the Kaggle zip alone is 721 MB)
+data/*
+!data/README.md
+!data/.gitkeep
+
+# Working notes: how the project was planned and discussed, not part of the deliverable
+working-notes/
+
+# Models, experiment tracking, environments
+mlruns/
+*.pkl
+*.joblib
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+.ipynb_checkpoints/
+
+# OS noise
+.DS_Store
