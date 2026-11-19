@@ -7,8 +7,8 @@ expected profit is as high as possible, every decline comes with reasons, and ap
 gender and age. Built on the [Home Credit Default Risk](https://www.kaggle.com/c/home-credit-default-risk) data:
 307,511 applications with credit-bureau records and earlier loans, 58 million rows in eight tables.
 
-> **Status:** Phases 0–2 complete (problem, formulation, data). Next: the tested feature pipeline (Phase 3) and
-> baselines (Phase 4). No model is trained yet; the numbers below come from the data analysis and a rough check.
+> **Status:** Phases 0–3 complete (problem, formulation, data, pipeline). Next: baselines (Phase 4). No model is
+> trained yet; the numbers below come from the data analysis, a rough check and single-feature tests.
 
 ## The problem
 
@@ -54,6 +54,7 @@ From [the EDA](reports/eda_summary.md) and a [preliminary profit check](reports/
 - **8.07%** of applicants have payment difficulty. Thin-file applicants (no bureau record, 14.3%) are riskier: **10.1% vs 7.7%**.
 - **No leakage found:** every event date is on or before the application; the only later dates are contracted end dates and 17 bureau rows, which are dropped ([leakage table](reports/leakage_table.md)).
 - **Gender and age can be reconstructed from other columns** (ROC-AUC 0.89 and R² 0.72), so excluding them is not enough; fairness is judged on outcomes.
+- The pipeline builds **93 / 116 / 157 features** for stages A / B / C in about 18 seconds; 16 of the 30 strongest single features come from the bureau and history tables ([features report](reports/features.md)).
 - A quick untuned model already beats approving everyone by about **+11%** in profit, but a better model beats a scorecard-like baseline by only **+1.9%**. That is why the target is set against approving everyone.
 
 ## Repository layout
@@ -61,7 +62,9 @@ From [the EDA](reports/eda_summary.md) and a [preliminary profit check](reports/
 ```text
 ├── configs/
 │   ├── economics.yaml             margin, LGD, review cost, guardrails (every profit number reads this)
-│   └── feature_availability.csv   leakage verdict for all 218 columns (generated)
+│   ├── feature_availability.csv   leakage verdict for all 218 columns (generated)
+│   ├── split_manifest.json        locked train / valid / test fingerprints
+│   └── feature_manifest.json      features per block and stage (generated)
 ├── data/README.md                 data card; the data itself is not committed
 ├── docs/
 │   ├── 01_problem_brief.md
@@ -69,11 +72,12 @@ From [the EDA](reports/eda_summary.md) and a [preliminary profit check](reports/
 │   ├── decision_log.md            D01–D41
 │   └── decisions/                 architecture decision records
 ├── notebooks/01_eda.ipynb         exploratory analysis (executed)
-├── reports/                       EDA summary, leakage table, preliminary check, figures
+├── reports/                       EDA summary, leakage table, features, preliminary check, figures
 ├── scripts/preliminary_check.py   exploration, not part of the pipeline
 ├── src/credit_risk/               the package
-│   └── data/                      interim conversion, feature-availability table
-├── tests/                         unit tests (run without the data)
+│   ├── data/                      interim conversion, cleaning rules, split, leakage table
+│   └── features/                  per-table aggregations, stage builder, audit table, preprocessor
+├── tests/                         34 unit tests (run without the data)
 └── monitoring/                    (Phase 9)
 ```
 
@@ -87,6 +91,8 @@ make install       # pip install -e ".[dev]"
 make data          # download and unzip into data/home-credit-default-risk/ (needs Kaggle API credentials)
 make interim       # raw CSV -> Parquet in data/interim/ (about 1 minute)
 make phase2        # rebuild the leakage table and re-execute the EDA notebook
+make split         # locked train / valid / test split
+make features      # feature tables for stages A, B, C (about 20 seconds)
 make test lint     # unit tests and static checks (no data needed)
 ```
 
@@ -99,8 +105,8 @@ make test lint     # unit tests and static checks (no data needed)
 | 0 Problem | ✅ | [Problem brief](docs/01_problem_brief.md) |
 | 1 Formulation | ✅ | [ML formulation](docs/02_ml_formulation.md), [ADR 0001](docs/decisions/0001-primary-metric.md), [ADR 0002](docs/decisions/0002-economic-assumptions.md) |
 | 2 Data | ✅ | [Data card](data/README.md), [EDA](notebooks/01_eda.ipynb), [leakage table](reports/leakage_table.md) |
-| 3 Pipeline | ⏳ next | Tested cleaning and aggregation of the related tables |
-| 4 Baselines | | Approve everyone, logistic scorecard |
+| 3 Pipeline | ✅ | [Features report](reports/features.md): cleaning, locked split, 157 features, preprocessor |
+| 4 Baselines | ⏳ next | Approve everyone, logistic scorecard |
 | 5 Models | | LightGBM with tuning, monotonic variant, table ablation (main → bureau → all) |
 | 6 Evaluation | | Calibration, slices, fairness, profit with confidence intervals, model card |
 | 7 Decision policy | | Profit curve, review band, reason codes; experiments E1–E5 |

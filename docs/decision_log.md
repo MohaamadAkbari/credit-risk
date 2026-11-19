@@ -94,9 +94,22 @@ have an architecture decision record in `docs/decisions/`. Other documents cite 
 | D40 | **Excluding gender and age does not make the model blind to them:** other columns recover gender (ROC-AUC 0.89) and age (R² 0.72). Fairness is judged on outcomes (D15); Phase 6 tests whether removing or constraining the strongest proxies narrows any gap, and at what profit cost | Proxy test in `notebooks/01_eda.ipynb`, section 7 | Drop all proxy columns now | Proposed |
 | D41 | **Kaggle's `application_test` is not used for evaluation**; it serves as a shifted population (0.9% revolving loans vs 9.5%) for drift tests | No labels; the locked test set comes from `application_train` (D20) | Ignore it | Provisional |
 
+## I. Data pipeline and features (Phase 3)
+
+| ID | Decision | Rationale | Alternatives considered | Status |
+| --- | --- | --- | --- | --- |
+| D42 | **Split fixed and fingerprinted:** seed 42, rows sorted by applicant ID before splitting, SHA-256 of each fold's IDs in `configs/split_manifest.json`; a rebuild that differs is refused unless `--relock` | The test set must not change silently between experiments | Re-split on every run | Accepted |
+| D43 | **Feature modules declare the exact columns they read**, and the loader reads nothing else; a test checks every declared column against the leakage table | Makes the leakage rules structural rather than a matter of care | Review by hand | Accepted |
+| D44 | **No rows in a related table means zero** for counts and sums; ratios, means and maxima stay missing | "No credits" is information, not unknown | Leave everything missing | Provisional |
+| D45 | **35 main-table columns left out:** 7 near-constant flags and 28 building-statistics duplicates (`_MEDI` r ≥ 0.99, numeric `_MODE` r ≥ 0.97 with `_AVG`) | Duplicates add width, not information | Keep all three versions | Provisional |
+| D46 | **Protected and slicing attributes in a separate audit table** (gender, age, age band, thin file, product), never in a feature table | Keeps them out of the model while available for fairness reports | Keep them in the feature table and drop at training | Accepted |
+| D47 | **Preprocessing fitted on the training fold only:** caps at the 0.1% / 99.9% quantiles, median imputation with missing flags, one-hot with levels under 50 rows grouped, optional scaling for linear models | Implements D21 and D39 in one reusable transformer | Fit on all data (leaks) | Provisional |
+| D48 | **Bureau amounts summed in the main currency only** (99.9% of rows) | Amounts in different currencies are not comparable | Convert (no rates available) | Provisional |
+
 ## Open items
 
 1. Decline cap (D14), after experiment E4.
 2. Sign-off on D13 (bad rate at most 6.5%), D16 (latency and reason codes) and D15/D40 (fairness metrics in light of the proxy finding).
 3. Real values for D06–D09 if any become available.
 4. Experiments E1–E5 once a calibrated model exists; review capacity from E1.
+5. Phase 4: official baselines on the locked split (approve everyone, logistic scorecard).

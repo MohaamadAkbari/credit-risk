@@ -1,0 +1,219 @@
+{
+ "rows": 307511,
+ "bureau_balance_max_month": 0,
+ "stages": {
+  "A": {
+   "blocks": [
+    "application"
+   ],
+   "features": 93
+  },
+  "B": {
+   "blocks": [
+    "application",
+    "bureau"
+   ],
+   "features": 116
+  },
+  "C": {
+   "blocks": [
+    "application",
+    "bureau",
+    "previous",
+    "installments",
+    "pos",
+    "credit_card"
+   ],
+   "features": 157
+  }
+ },
+ "blocks": {
+  "application": {
+   "applicants_with_source_rows": 307511,
+   "features": [
+    "NAME_CONTRACT_TYPE",
+    "FLAG_OWN_CAR",
+    "FLAG_OWN_REALTY",
+    "CNT_CHILDREN",
+    "AMT_INCOME_TOTAL",
+    "AMT_CREDIT",
+    "AMT_ANNUITY",
+    "AMT_GOODS_PRICE",
+    "NAME_TYPE_SUITE",
+    "NAME_INCOME_TYPE",
+    "NAME_EDUCATION_TYPE",
+    "NAME_FAMILY_STATUS",
+    "NAME_HOUSING_TYPE",
+    "REGION_POPULATION_RELATIVE",
+    "DAYS_EMPLOYED",
+    "DAYS_REGISTRATION",
+    "DAYS_ID_PUBLISH",
+    "OWN_CAR_AGE",
+    "FLAG_EMP_PHONE",
+    "FLAG_WORK_PHONE",
+    "FLAG_CONT_MOBILE",
+    "FLAG_PHONE",
+    "FLAG_EMAIL",
+    "OCCUPATION_TYPE",
+    "CNT_FAM_MEMBERS",
+    "REGION_RATING_CLIENT",
+    "REGION_RATING_CLIENT_W_CITY",
+    "WEEKDAY_APPR_PROCESS_START",
+    "HOUR_APPR_PROCESS_START",
+    "REG_REGION_NOT_LIVE_REGION",
+    "REG_REGION_NOT_WORK_REGION",
+    "LIVE_REGION_NOT_WORK_REGION",
+    "REG_CITY_NOT_LIVE_CITY",
+    "REG_CITY_NOT_WORK_CITY",
+    "LIVE_CITY_NOT_WORK_CITY",
+    "ORGANIZATION_TYPE",
+    "EXT_SOURCE_1",
+    "EXT_SOURCE_2",
+    "EXT_SOURCE_3",
+    "APARTMENTS_AVG",
+    "BASEMENTAREA_AVG",
+    "YEARS_BEGINEXPLUATATION_AVG",
+    "YEARS_BUILD_AVG",
+    "COMMONAREA_AVG",
+    "ELEVATORS_AVG",
+    "ENTRANCES_AVG",
+    "FLOORSMAX_AVG",
+    "FLOORSMIN_AVG",
+    "LANDAREA_AVG",
+    "LIVINGAPARTMENTS_AVG",
+    "LIVINGAREA_AVG",
+    "NONLIVINGAPARTMENTS_AVG",
+    "NONLIVINGAREA_AVG",
+    "FONDKAPREMONT_MODE",
+    "HOUSETYPE_MODE",
+    "TOTALAREA_MODE",
+    "WALLSMATERIAL_MODE",
+    "EMERGENCYSTATE_MODE",
+    "OBS_30_CNT_SOCIAL_CIRCLE",
+    "DEF_30_CNT_SOCIAL_CIRCLE",
+    "OBS_60_CNT_SOCIAL_CIRCLE",
+    "DEF_60_CNT_SOCIAL_CIRCLE",
+    "DAYS_LAST_PHONE_CHANGE",
+    "FLAG_DOCUMENT_3",
+    "FLAG_DOCUMENT_5",
+    "FLAG_DOCUMENT_6",
+    "FLAG_DOCUMENT_8",
+    "FLAG_DOCUMENT_9",
+    "FLAG_DOCUMENT_11",
+    "FLAG_DOCUMENT_13",
+    "FLAG_DOCUMENT_14",
+    "FLAG_DOCUMENT_15",
+    "FLAG_DOCUMENT_16",
+    "FLAG_DOCUMENT_18",
+    "FLAG_DOCUMENT_19",
+    "FLAG_DOCUMENT_20",
+    "FLAG_DOCUMENT_21",
+    "AMT_REQ_CREDIT_BUREAU_HOUR",
+    "AMT_REQ_CREDIT_BUREAU_DAY",
+    "AMT_REQ_CREDIT_BUREAU_WEEK",
+    "AMT_REQ_CREDIT_BUREAU_MON",
+    "AMT_REQ_CREDIT_BUREAU_QRT",
+    "AMT_REQ_CREDIT_BUREAU_YEAR",
+    "EMPLOYED_NA",
+    "CREDIT_INCOME",
+    "ANNUITY_INCOME",
+    "CREDIT_GOODS",
+    "CREDIT_TERM",
+    "INCOME_PER_PERSON",
+    "EXT_SOURCE_MEAN",
+    "EXT_SOURCE_MIN",
+    "EXT_SOURCE_COUNT",
+    "DOCUMENT_COUNT"
+   ]
+  },
+  "bureau": {
+   "applicants_with_source_rows": 263490,
+   "features": [
+    "BUR_COUNT",
+    "BUR_ACTIVE_COUNT",
+    "BUR_BAD_OR_SOLD_COUNT",
+    "BUR_OPENED_7D_COUNT",
+    "BUR_OPENED_90D_COUNT",
+    "BUR_DAYS_CREDIT_MAX",
+    "BUR_DAYS_CREDIT_MIN",
+    "BUR_OVERDUE_NOW_COUNT",
+    "BUR_DAY_OVERDUE_MAX",
+    "BUR_AMT_OVERDUE_SUM",
+    "BUR_MAX_OVERDUE_MAX",
+    "BUR_PROLONG_SUM",
+    "BUR_ACTIVE_DEBT_SUM",
+    "BUR_ACTIVE_CREDIT_SUM",
+    "BUR_ACTIVE_ANNUITY_SUM",
+    "BUR_ACTIVE_END_MAX",
+    "BUR_CARD_COUNT",
+    "BUR_MICROLOAN_COUNT",
+    "BUR_ACTIVE_DEBT_RATIO",
+    "BB_WORST_DPD_MAX",
+    "BB_WORST_DPD_12M_MAX",
+    "BB_LATE_SHARE_MEAN",
+    "BB_MONTHS_COUNT"
+   ]
+  },
+  "previous": {
+   "applicants_with_source_rows": 291057,
+   "features": [
+    "PREV_COUNT",
+    "PREV_APPROVED_COUNT",
+    "PREV_REFUSED_COUNT",
+    "PREV_CANCELED_COUNT",
+    "PREV_REFUSED_SHARE",
+    "PREV_DAYS_DECISION_MAX",
+    "PREV_LAST_REFUSAL_DAYS",
+    "PREV_APPLIED_30D_COUNT",
+    "PREV_APPROVED_CREDIT_MEAN",
+    "PREV_ASKED_VS_GRANTED_MEAN",
+    "PREV_TERM_MEAN",
+    "PREV_RUNNING_COUNT",
+    "PREV_RUNNING_ANNUITY_SUM",
+    "PREV_REJECT_HC_COUNT",
+    "PREV_REJECT_LIMIT_COUNT",
+    "PREV_REJECT_SCO_COUNT",
+    "PREV_HIGH_YIELD_SHARE"
+   ]
+  },
+  "installments": {
+   "applicants_with_source_rows": 291643,
+   "features": [
+    "INST_COUNT",
+    "INST_LATE_SHARE",
+    "INST_LATE_SHARE_1Y",
+    "INST_LATE_DAYS_MEAN",
+    "INST_LATE_DAYS_MAX",
+    "INST_UNPAID_COUNT",
+    "INST_UNDERPAID_SHARE",
+    "INST_PAID_RATIO_MEAN"
+   ]
+  },
+  "pos": {
+   "applicants_with_source_rows": 289444,
+   "features": [
+    "POS_MONTHS_COUNT",
+    "POS_LOAN_COUNT",
+    "POS_DPD_MAX",
+    "POS_DPD_12M_MAX",
+    "POS_DPD_DEF_SHARE",
+    "POS_REMAINING_INSTALMENTS_SUM"
+   ]
+  },
+  "credit_card": {
+   "applicants_with_source_rows": 86905,
+   "features": [
+    "CC_MONTHS_COUNT",
+    "CC_CARD_COUNT",
+    "CC_UTIL_MEAN",
+    "CC_DRAWINGS_MEAN",
+    "CC_DPD_MAX",
+    "CC_DPD_DEF_SHARE",
+    "CC_PAID_BELOW_MIN_SHARE",
+    "CC_UTIL_LATEST_MEAN",
+    "CC_BALANCE_LATEST_SUM",
+    "CC_LIMIT_LATEST_SUM"
+   ]
+  }
+ }
+}

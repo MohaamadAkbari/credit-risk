@@ -50,7 +50,7 @@ Dependencies are declared in `pyproject.toml`.
 | --- | --- | --- |
 | `data/home-credit-default-risk/` | The 10 original CSVs | Raw, **never edited** |
 | `data/interim/` | One Parquet file per table, made by `make interim`; IDs int32, other numbers float32, text as strings | Derived, rebuildable, not cleaned. float32 keeps about 7 significant digits: fine for exploration; Phase 3 features read the raw values |
-| `data/processed/` | (Phase 3) model-ready features | — |
+| `data/processed/` | `split.parquet`, `features_{A,B,C}.parquet`, `audit.parquet` (made by `make split features`) | Derived, rebuildable; the split is locked by `configs/split_manifest.json` |
 
 ## Tables and how they join
 

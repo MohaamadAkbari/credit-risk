@@ -1,0 +1,30 @@
+{
+  "seed": 42,
+  "shares": {
+    "train": 0.7,
+    "valid": 0.15,
+    "test": 0.15
+  },
+  "stratified_on": "TARGET",
+  "unit": "SK_ID_CURR",
+  "folds": {
+    "train": {
+      "rows": 215257,
+      "defaults": 17377,
+      "default_rate": 0.08073,
+      "sha256_ids": "5baec90e9d401620288d0ea4bfee8b19f17bd6e8c3074ae2a9aa0efc46dbe2b5"
+    },
+    "valid": {
+      "rows": 46127,
+      "defaults": 3724,
+      "default_rate": 0.08073,
+      "sha256_ids": "b1d49216dd6c5a4802694eb9b81c4a6d97c4ce2e0c35311603a9da7ea59af6ab"
+    },
+    "test": {
+      "rows": 46127,
+      "defaults": 3724,
+      "default_rate": 0.08073,
+      "sha256_ids": "fcddbb0bb86c3df71554c3f20a62a53088d7a3aac0ec20e656ff9de7cf02479b"
+    }
+  }
+}
