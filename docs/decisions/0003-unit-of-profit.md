@@ -65,7 +65,7 @@ Weighted by money lent, the default rate is 7.52%, not 8.07%. The margin is flat
 D12 (+10% over approving everyone) was confirmed by the owner on unit-weighted numbers. Under the amount-weighted
 measure the preliminary model reaches **+9.2%**, just under the target. The target is **kept unchanged** and is now
 measured amount-weighted. The preliminary model uses 17 main-table inputs; stages B and C add the bureau and history
-signal (16 of the 30 strongest single features), so the target is still plausible, but it is no longer shown to be
+signal (18 of the 30 strongest single features carry bureau or history information), so the target is still plausible, but it is no longer shown to be
 reachable. **The owner should re-confirm D12 under this measure**, or restate it, after the Phase 4 baselines.
 
 ## Alternatives considered

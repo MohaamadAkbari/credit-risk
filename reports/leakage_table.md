@@ -83,7 +83,7 @@
 | `REGION_RATING_CLIENT` | A | `ok` | 0 | 1 | 3 |  |  |  | Application form or Home Credit's own data on the application day |
 | `REGION_RATING_CLIENT_W_CITY` | A | `ok` | 0 | 1 | 3 |  |  |  | Application form or Home Credit's own data on the application day |
 | `WEEKDAY_APPR_PROCESS_START` | - | `exclude` | 0 |  |  |  |  |  | Process metadata with no signal (7.8-8.4% default by weekday); excluded with the hour (D51) |
-| `HOUR_APPR_PROCESS_START` | - | `exclude` | 0 | 0 | 23 |  |  |  | Default 10-11% at 5-7 am vs 6.5% at 5 pm, but mostly region / time zone: 22% of region-3 applications start by 7 am vs 1% in region 1, and the gap shrinks within region. Not about the applicant; excluded (D51) |
+| `HOUR_APPR_PROCESS_START` | - | `exclude` | 0 | 0 | 23 |  |  |  | Default 10-11% at 5-7 am vs 6.5% at 5 pm, but mostly region / time zone: 22% of region-3 applications start by 7 am vs 0.6% in region 1, and the gap shrinks within region. Not about the applicant; excluded (D51) |
 | `REG_REGION_NOT_LIVE_REGION` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
 | `REG_REGION_NOT_WORK_REGION` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
 | `LIVE_REGION_NOT_WORK_REGION` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |

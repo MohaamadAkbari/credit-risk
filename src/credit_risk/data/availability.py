@@ -87,7 +87,7 @@ r(A, "AMT_REQ_CREDIT_BUREAU_HOUR AMT_REQ_CREDIT_BUREAU_DAY AMT_REQ_CREDIT_BUREAU
 r(A, "FLAG_MOBIL FLAG_DOCUMENT_2 FLAG_DOCUMENT_4 FLAG_DOCUMENT_7 FLAG_DOCUMENT_10 FLAG_DOCUMENT_12 FLAG_DOCUMENT_17",
   "ok", "Near-constant (fewer than 100 rows differ); drop in Phase 3 for lack of signal, not for leakage")
 r(A, "HOUR_APPR_PROCESS_START", "exclude",
-  "Default 10-11% at 5-7 am vs 6.5% at 5 pm, but mostly region / time zone: 22% of region-3 applications start by 7 am vs 1% in region 1, and the gap shrinks within region. Not about the applicant; excluded (D51)")
+  "Default 10-11% at 5-7 am vs 6.5% at 5 pm, but mostly region / time zone: 22% of region-3 applications start by 7 am vs 0.6% in region 1, and the gap shrinks within region. Not about the applicant; excluded (D51)")
 r(A, "WEEKDAY_APPR_PROCESS_START", "exclude",
   "Process metadata with no signal (7.8-8.4% default by weekday); excluded with the hour (D51)")
 
