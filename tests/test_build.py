@@ -38,7 +38,7 @@ def test_build_all_on_mini_tables(tmp_path):
     interim = tmp_path / "interim"
     interim.mkdir()
     need = {}
-    for src in [application.sources(AVAIL), bureau.SOURCES, previous.SOURCES, installments.SOURCES,
+    for src in [application.sources(AVAIL), application.bureau_sources(AVAIL), bureau.SOURCES, previous.SOURCES, installments.SOURCES,
                 monthly.SOURCES, audit.SOURCES, {"application_train": ["TARGET"]}]:
         for t, cols in src.items():
             need.setdefault(t, set()).update(cols)

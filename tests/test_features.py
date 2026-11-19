@@ -4,19 +4,29 @@ import pandas as pd
 import pytest
 
 from credit_risk.features import bureau, installments, monthly, previous
+from credit_risk.features.application import bureau_features as app_bureau_features
 from credit_risk.features.application import features as app_features
 
 
 def test_application_ratios():
     app = pd.DataFrame({"SK_ID_CURR": [1], "AMT_CREDIT": [200.0], "AMT_INCOME_TOTAL": [100.0],
                         "AMT_ANNUITY": [10.0], "AMT_GOODS_PRICE": [160.0], "CNT_FAM_MEMBERS": [2.0],
-                        "EXT_SOURCE_1": [np.nan], "EXT_SOURCE_2": [0.2], "EXT_SOURCE_3": [0.6],
+                        "EXT_SOURCE_1": [np.nan], "EXT_SOURCE_2": [0.2],
                         "DAYS_EMPLOYED": [365243.0], "FLAG_DOCUMENT_3": [1], "FLAG_DOCUMENT_8": [1]})
     r = app_features(app).loc[1]
     assert r.CREDIT_INCOME == 2 and r.ANNUITY_INCOME == 0.1 and r.CREDIT_GOODS == 1.25 and r.CREDIT_TERM == 20
     assert r.INCOME_PER_PERSON == 50
-    assert r.EXT_SOURCE_MEAN == pytest.approx(0.4) and r.EXT_SOURCE_MIN == 0.2 and r.EXT_SOURCE_COUNT == 2
+    assert r.EXT_SOURCE_12_MEAN == pytest.approx(0.2) and r.EXT_SOURCE_12_MIN == 0.2
     assert r.DOCUMENT_COUNT == 2 and r.EMPLOYED_NA == 1 and np.isnan(r.DAYS_EMPLOYED)
+
+
+def test_application_bureau_block_combines_all_three_scores():
+    app = pd.DataFrame({"SK_ID_CURR": [1, 2], "EXT_SOURCE_1": [np.nan, 0.5], "EXT_SOURCE_2": [0.2, 0.3],
+                        "EXT_SOURCE_3": [0.6, np.nan], "AMT_REQ_CREDIT_BUREAU_YEAR": [1.0, np.nan]})
+    out = app_bureau_features(app)
+    assert "EXT_SOURCE_2" not in out and "EXT_SOURCE_3" in out          # stage A already has sources 1 and 2
+    assert out.loc[1].EXT_SOURCE_MEAN == pytest.approx(0.4) and out.loc[1].EXT_SOURCE_COUNT == 2
+    assert out.loc[2].EXT_SOURCE_MIN == pytest.approx(0.3)
 
 
 def _bureau():

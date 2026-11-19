@@ -1,0 +1,47 @@
+# Reason-code groups for declines (Phase 7 reads this; D16, D52, D53).
+# A decline lists at most four reasons (D16). Features in one group share a cause, so their SHAP
+# contributions are summed and the group gives ONE reason. This stops redundant pairs
+# (e.g. AMT_CREDIT and AMT_GOODS_PRICE, r = 0.987) from filling two of the four slots.
+#
+# Feature names are those in configs/feature_manifest.json. A preprocessor missing-indicator
+# column belongs to the same group as its source feature.
+
+groups:
+  credit_bureau_history:
+    reason: "No or limited credit-bureau history"
+    # Every feature of these blocks, and their missing indicators (D50, D53)
+    blocks: [application_bureau, bureau]
+    policy: >-
+      Allowed as a decline reason (an insufficient credit file is a standard adverse-action reason),
+      given at most once per decline. Its share among thin-file declines is reported in Phase 6
+      and monitored in Phase 9, because the business goal is to approve more thin-file applicants (D01).
+  external_scores:
+    reason: "External credit scores"
+    features: [EXT_SOURCE_1, EXT_SOURCE_2, EXT_SOURCE_12_MEAN, EXT_SOURCE_12_MIN]
+  loan_size:
+    reason: "Loan amount"
+    features: [AMT_CREDIT, AMT_GOODS_PRICE, CREDIT_INCOME]
+  repayment_burden:
+    reason: "Repayment amount relative to income"
+    features: [AMT_ANNUITY, ANNUITY_INCOME, CREDIT_TERM]
+  financed_above_price:
+    reason: "Amount borrowed above the price of the goods"
+    features: [CREDIT_GOODS]
+  income:
+    reason: "Income"
+    features: [AMT_INCOME_TOTAL, INCOME_PER_PERSON]
+  employment:
+    reason: "Employment history"
+    features: [DAYS_EMPLOYED, EMPLOYED_NA, ORGANIZATION_TYPE, OCCUPATION_TYPE, NAME_INCOME_TYPE]
+  region:
+    reason: "Region of residence"
+    features: [REGION_RATING_CLIENT, REGION_RATING_CLIENT_W_CITY, REGION_POPULATION_RELATIVE]
+  social_circle:
+    reason: "Payment problems in the applicant's social circle"
+    features: [OBS_30_CNT_SOCIAL_CIRCLE, DEF_30_CNT_SOCIAL_CIRCLE, DEF_60_CNT_SOCIAL_CIRCLE]
+
+# Not shown as reasons (they would read as arbitrary to an applicant); their contribution is
+# still counted in the score.
+hidden: [DOCUMENT_COUNT, PHONE_CHANGE_DAY0, CAR_AGE_CODED]
+
+# Features not listed above are their own group, named after the feature, until Phase 7 names them.

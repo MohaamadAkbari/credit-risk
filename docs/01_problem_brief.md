@@ -39,4 +39,4 @@ Pricing and credit limits, collections strategy, a full solution to reject infer
 
 ## Known limits
 
-The label `TARGET` means payment difficulty, not write-off, so profit is an estimate. No application dates exist, so a time-based split is impossible. Money assumptions are placeholders and are stress-tested by experiments E1–E5.
+The label `TARGET` means payment difficulty, not write-off, so profit is an estimate. No application dates exist, so a time-based split is impossible. Money assumptions are placeholders and are stress-tested by experiments E1–E7. Profit is weighted by loan amount (ADR 0003).

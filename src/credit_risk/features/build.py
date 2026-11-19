@@ -2,7 +2,8 @@
 
 Outputs (data/processed/, not committed):
   features_A.parquet   application form only
-  features_B.parquet   + bureau and bureau_balance
+  features_B.parquet   + credit-bureau information: bureau, bureau_balance and the bureau-derived
+                       main-table columns (D50)
   features_C.parquet   + earlier Home Credit applications, instalments, POS and card months
   audit.parquet        gender, age band, thin file, product: for fairness slices, never a model input
 Committed: configs/feature_manifest.json (row counts, feature names per block, coverage).
@@ -23,12 +24,13 @@ from credit_risk.features import application, audit, bureau, installments, month
 from credit_risk.paths import AVAILABILITY, FEATURE_MANIFEST, INTERIM, PROCESSED
 
 STAGES = {"A": ["application"],
-          "B": ["application", "bureau"],
-          "C": ["application", "bureau", "previous", "installments", "pos", "credit_card"]}
+          "B": ["application", "application_bureau", "bureau"],
+          "C": ["application", "application_bureau", "bureau", "previous", "installments", "pos", "credit_card"]}
 
 
 def _builders(availability: Path, bb_max_month: int):
     return {"application": lambda i: application.build(i, availability),
+            "application_bureau": lambda i: application.build_bureau(i, availability),
             "bureau": lambda i: bureau.build(i, bb_max_month),
             "previous": previous.build, "installments": installments.build,
             "pos": monthly.build_pos, "credit_card": monthly.build_cc}
@@ -36,7 +38,7 @@ def _builders(availability: Path, bb_max_month: int):
 
 def _tidy(block: pd.DataFrame, ids: pd.Index, name: str) -> pd.DataFrame:
     block = block.reindex(ids)
-    if name != "application":
+    if name not in ("application", "application_bureau"):
         # No rows in the source table means zero credits / zero amounts, not "unknown".
         zero = [c for c in block.columns if c.endswith(("_COUNT", "_SUM"))]
         block[zero] = block[zero].fillna(0)

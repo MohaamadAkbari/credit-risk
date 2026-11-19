@@ -19,6 +19,15 @@ def test_application_recodes_employment_marker_and_xna_gender():
     assert out.CODE_GENDER.isna().tolist() == [False, True]
 
 
+def test_application_recodes_car_age_codes_and_phone_change_day_zero():
+    app = pd.DataFrame({"OWN_CAR_AGE": [5.0, 64.0, 65.0, np.nan], "DAYS_LAST_PHONE_CHANGE": [0.0, -1.0, -300.0, 0.0]})
+    out = clean_application(app)
+    assert out.OWN_CAR_AGE.isna().tolist() == [False, True, True, True]
+    assert out.CAR_AGE_CODED.tolist() == [0, 1, 1, 0]                 # a missing age (no car) is not a code
+    assert out.DAYS_LAST_PHONE_CHANGE.isna().tolist() == [True, False, False, True]
+    assert out.PHONE_CHANGE_DAY0.tolist() == [1, 0, 0, 1]
+
+
 def test_bureau_drops_rows_updated_after_application_and_nulls_impossible_dates():
     bu = pd.DataFrame({"DAYS_CREDIT": [-500.0, -300.0, -200.0, -100.0],
                        "DAYS_CREDIT_UPDATE": [-10.0, 30.0, -5.0, -1.0],     # second row: after the application

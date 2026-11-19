@@ -8,9 +8,10 @@ from credit_risk.features import application, bureau, installments, monthly, pre
 from credit_risk.features.build import STAGES
 
 AVAIL = Path(__file__).resolve().parents[1] / "configs" / "feature_availability.csv"
-FORBIDDEN = {"label", "protected"}
+FORBIDDEN = {"label", "protected", "exclude"}
 STAGE_RANK = {"A": 0, "B": 1, "C": 2}
-MODULES = {"application": (application.sources(AVAIL), "A"), "bureau": (bureau.SOURCES, "B"),
+MODULES = {"application": (application.sources(AVAIL), "A"),
+           "application_bureau": (application.bureau_sources(AVAIL), "B"), "bureau": (bureau.SOURCES, "B"),
            "previous": (previous.SOURCES, "C"), "installments": (installments.SOURCES, "C"),
            "monthly": (monthly.SOURCES, "C")}
 
@@ -36,9 +37,16 @@ def test_declared_columns_are_allowed(name, verdicts):
 
 
 def test_application_features_exclude_label_and_protected():
-    cols = set(application.allowed_columns(AVAIL))
+    cols = set(application.allowed_columns(AVAIL)) | set(application.allowed_columns(AVAIL, stage="B"))
     assert not cols & {"TARGET", "CODE_GENDER", "DAYS_BIRTH", "SK_ID_CURR"}
     assert "FLAG_MOBIL" not in cols and not any(c.endswith("_MEDI") for c in cols)
+    assert not cols & {"FLAG_EMP_PHONE", "OBS_60_CNT_SOCIAL_CIRCLE"}                       # duplicates (D52)
+    assert not cols & {"HOUR_APPR_PROCESS_START", "WEEKDAY_APPR_PROCESS_START"}            # excluded (D51)
+
+
+def test_bureau_derived_main_table_columns_are_stage_b_only():
+    a, b = set(application.allowed_columns(AVAIL)), set(application.allowed_columns(AVAIL, stage="B"))
+    assert "EXT_SOURCE_3" in b and "EXT_SOURCE_3" not in a and not a & b                    # D50
 
 
 def test_audit_table_is_not_a_stage():

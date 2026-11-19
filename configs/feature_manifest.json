@@ -6,11 +6,12 @@
    "blocks": [
     "application"
    ],
-   "features": 93
+   "features": 83
   },
   "B": {
    "blocks": [
     "application",
+    "application_bureau",
     "bureau"
    ],
    "features": 116
@@ -18,6 +19,7 @@
   "C": {
    "blocks": [
     "application",
+    "application_bureau",
     "bureau",
     "previous",
     "installments",
@@ -49,7 +51,6 @@
     "DAYS_REGISTRATION",
     "DAYS_ID_PUBLISH",
     "OWN_CAR_AGE",
-    "FLAG_EMP_PHONE",
     "FLAG_WORK_PHONE",
     "FLAG_CONT_MOBILE",
     "FLAG_PHONE",
@@ -58,8 +59,6 @@
     "CNT_FAM_MEMBERS",
     "REGION_RATING_CLIENT",
     "REGION_RATING_CLIENT_W_CITY",
-    "WEEKDAY_APPR_PROCESS_START",
-    "HOUR_APPR_PROCESS_START",
     "REG_REGION_NOT_LIVE_REGION",
     "REG_REGION_NOT_WORK_REGION",
     "LIVE_REGION_NOT_WORK_REGION",
@@ -69,7 +68,6 @@
     "ORGANIZATION_TYPE",
     "EXT_SOURCE_1",
     "EXT_SOURCE_2",
-    "EXT_SOURCE_3",
     "APARTMENTS_AVG",
     "BASEMENTAREA_AVG",
     "YEARS_BEGINEXPLUATATION_AVG",
@@ -91,7 +89,6 @@
     "EMERGENCYSTATE_MODE",
     "OBS_30_CNT_SOCIAL_CIRCLE",
     "DEF_30_CNT_SOCIAL_CIRCLE",
-    "OBS_60_CNT_SOCIAL_CIRCLE",
     "DEF_60_CNT_SOCIAL_CIRCLE",
     "DAYS_LAST_PHONE_CHANGE",
     "FLAG_DOCUMENT_3",
@@ -108,22 +105,32 @@
     "FLAG_DOCUMENT_19",
     "FLAG_DOCUMENT_20",
     "FLAG_DOCUMENT_21",
+    "EMPLOYED_NA",
+    "CAR_AGE_CODED",
+    "PHONE_CHANGE_DAY0",
+    "CREDIT_INCOME",
+    "ANNUITY_INCOME",
+    "CREDIT_GOODS",
+    "CREDIT_TERM",
+    "INCOME_PER_PERSON",
+    "EXT_SOURCE_12_MEAN",
+    "EXT_SOURCE_12_MIN",
+    "DOCUMENT_COUNT"
+   ]
+  },
+  "application_bureau": {
+   "applicants_with_source_rows": 307511,
+   "features": [
+    "EXT_SOURCE_3",
     "AMT_REQ_CREDIT_BUREAU_HOUR",
     "AMT_REQ_CREDIT_BUREAU_DAY",
     "AMT_REQ_CREDIT_BUREAU_WEEK",
     "AMT_REQ_CREDIT_BUREAU_MON",
     "AMT_REQ_CREDIT_BUREAU_QRT",
     "AMT_REQ_CREDIT_BUREAU_YEAR",
-    "EMPLOYED_NA",
-    "CREDIT_INCOME",
-    "ANNUITY_INCOME",
-    "CREDIT_GOODS",
-    "CREDIT_TERM",
-    "INCOME_PER_PERSON",
     "EXT_SOURCE_MEAN",
     "EXT_SOURCE_MIN",
-    "EXT_SOURCE_COUNT",
-    "DOCUMENT_COUNT"
+    "EXT_SOURCE_COUNT"
    ]
   },
   "bureau": {

@@ -3,12 +3,17 @@
 # Change values here; every profit number in the project reads from this file.
 
 unit: share_of_principal   # currency of the dataset is unknown
+profit_weighting: amount   # D54, ADR 0003: each loan weighted by AMT_CREDIT; unit-weighted reported alongside
+margin_model: flat         # D54: flat 12% per loan; term_scaled is sensitivity experiment E6
 
 margin_on_repaid_loan:
   value: 0.12
   test_range: [0.08, 0.18]
   confidence: low
   note: one article gives 12-18% annual net interest margin; bottom of range used
+  term_scaled:              # E6 (ADR 0003): annual margin x years x average outstanding share
+    formula: "0.12 * (n / 12) * (n + 1) / (2 * n)"   # n = AMT_CREDIT / AMT_ANNUITY, months
+    observed: {median: 0.105, p05: 0.053, p95: 0.178, amount_weighted_mean: 0.130}
 
 loss_given_default:
   value: 0.60
@@ -35,6 +40,13 @@ review_capacity:            # share of applications that can be manually reviewe
 
 thin_file:
   definition: no_record_in_bureau_table   # 14.3% of applications (D30)
+  decline_reason: "No or limited credit-bureau history"   # D53: allowed, at most once; see configs/reason_codes.yaml
+
+fairness:                   # D15, D56: fixed before any model is trained
+  groups: [gender, age_band]
+  age_bands: ["<25", "25-34", "35-44", "45-54", "55-64", "65+"]   # edges 18, 25, 35, 45, 55, 65; as in the audit table
+  smallest_cell: {group: "men 65+", applicants: 1504, default_rate: 0.056, ci95_points: 1.2}
+  also_report_with: thin_file   # thin-file applicants skew young (7.7% under 25 vs 3.4%)
 
 deployment:
   cloud: aws                # D34
@@ -47,10 +59,10 @@ simplifications:
   reviewer_wrongly_declines_good: false   # optimistic: real reviewers sometimes do
 
 guardrails:                 # D12 accepted; D13, D15, D16 proposed; D14 deferred until E4
-  min_profit_lift_vs_approve_all: 0.10    # D12
+  min_profit_lift_vs_approve_all: 0.10    # D12, measured amount-weighted (D54); preliminary +9.2% amount-weighted, +11.2% unit: owner to re-confirm
   profit_vs_scorecard: reported_only      # reported with a confidence interval; not a pass/fail gate (D12)
   max_default_rate_among_approved: 0.065
-  max_decline_rate: 0.10                  # decided after E4 whether it overrides the cutoff (D14) (preliminary: cutoff declines 10-11%)
+  max_decline_rate: 0.10                  # decided after E4 whether it overrides the cutoff (D14) (preliminary: cutoff declines 10-11%; about 16% with the term-scaled margin, E6)
   min_group_approval_ratio: 0.80          # applies to approval rate and to approval among people who repay; groups: gender, age band
   max_p99_latency_seconds: 1.0
   reason_codes_per_decline: 4

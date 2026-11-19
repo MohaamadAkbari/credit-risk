@@ -207,7 +207,7 @@ Gender (`CODE_GENDER`) and age (`DAYS_BIRTH`) are kept out of the model's inputs
 
 ## Experiment plan: review capacity and cost sensitivity
 
-Once a model exists, five experiments will replace our placeholders with measured trade-offs and show how much each assumption matters. None can run yet: they need the data and a trained, calibrated model.
+Once a model exists, seven experiments will replace our placeholders with measured trade-offs and show how much each assumption matters. None can run yet: they need the data and a trained, calibrated model.
 
 | # | Question | Method | Output |
 | --- | --- | --- | --- |
@@ -215,7 +215,9 @@ Once a model exists, five experiments will replace our placeholders with measure
 | E2 | How much does the answer depend on margin, LGD and review cost? | Grid over the ranges in the economics table; recompute the best policy and its profit each time | Heat map of profit and of the optimal cutoff |
 | E3 | How good must reviewers be for review to be worth it? | Vary the share of defaults they catch from 0% to 60% | The break-even reviewer accuracy |
 | E4 | Where exactly should the cutoffs be? | Profit curve over thresholds, then the three-way policy with a conformal "unsure" zone | Approve, review and decline cutoffs, and the shares of applicants in each |
-| E5 | Does the model beat the alternatives in money terms? | Compare approve-everyone, scorecard (logistic regression), and gradient-boosting policies on the locked test set, with bootstrap intervals | Profit table against the 10% target |
+| E5 | Does the model beat the alternatives in money terms? | Compare approve-everyone, scorecard (logistic regression), and gradient-boosting policies on the locked test set, with bootstrap intervals | Profit table against the 10% target (amount-weighted, D54) |
+| E6 | Does a margin that grows with the loan term change the policy? *(added 19 Nov, ADR 0003)* | Repeat E4 with the term-scaled margin, so each loan has its own break-even PD | Cutoffs, decline rate and profit, flat vs term-scaled margin |
+| E7 | Should thin-file applicants near the cutoff go to review instead of decline? *(added 19 Nov, D53)* | Within E1's capacity, give thin-file applicants a wider review band; compare profit, thin-file approval rate and age-band fairness | Profit cost of each extra thin-file approval |
 
 ### How to read the results
 

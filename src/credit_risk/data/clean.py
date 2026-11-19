@@ -18,13 +18,31 @@ def _na_where(s: pd.Series, mask) -> pd.Series:
     return s.mask(mask)
 
 
+CAR_AGE_CODES = (64, 65)  # 2,443 + 891 car owners, against 1-2 rows at 63 and 69: codes, not ages
+
+
 def clean_application(df: pd.DataFrame) -> pd.DataFrame:
-    """Recode the employment no-date marker (pensioners) and the 4 'XNA' genders."""
+    """Recode placeholder values in the application table, each to missing plus a flag.
+
+    - DAYS_EMPLOYED = 365243: pensioners and unemployed (flag EMPLOYED_NA)
+    - OWN_CAR_AGE = 64 or 65: a code, not an age (flag CAR_AGE_CODED; Phase 2 review, finding 5)
+    - DAYS_LAST_PHONE_CHANGE = 0: 37,672 rows against 2,812 at -1, so a process value rather than
+      a real change date (flag PHONE_CHANGE_DAY0; Phase 2 review, finding 5)
+    - CODE_GENDER = 'XNA' (4 rows, audit only)
+    """
     df = df.copy()
     if "DAYS_EMPLOYED" in df:
         na = df["DAYS_EMPLOYED"] == NO_DATE
         df["EMPLOYED_NA"] = na.astype("int8")
         df["DAYS_EMPLOYED"] = _na_where(df["DAYS_EMPLOYED"], na)
+    if "OWN_CAR_AGE" in df:
+        coded = df["OWN_CAR_AGE"].isin(CAR_AGE_CODES)
+        df["CAR_AGE_CODED"] = coded.astype("int8")
+        df["OWN_CAR_AGE"] = _na_where(df["OWN_CAR_AGE"], coded)
+    if "DAYS_LAST_PHONE_CHANGE" in df:
+        day0 = df["DAYS_LAST_PHONE_CHANGE"] == 0
+        df["PHONE_CHANGE_DAY0"] = day0.astype("int8")
+        df["DAYS_LAST_PHONE_CHANGE"] = _na_where(df["DAYS_LAST_PHONE_CHANGE"], day0)
     if "CODE_GENDER" in df:
         df["CODE_GENDER"] = df["CODE_GENDER"].astype("object").where(df["CODE_GENDER"] != "XNA")
     return df
