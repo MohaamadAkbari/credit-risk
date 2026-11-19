@@ -24,7 +24,8 @@
 - **Licence / terms:** governed by the competition rules, which the account holder accepted before downloading (D27). The data is **not redistributed**: it is excluded from git by `.gitignore`, and anyone reproducing the project must download it themselves.
 - **Downloaded:** 17 November 2026 by the project owner.
 - **Archive:** `data/home-credit-default-risk.zip`, 721,616,255 bytes,
-  SHA-256 `4e7a243b13f6e3d40f682a9a0cfd59c70910ca6c5a4289f71ca1f25efbd8e3de`. If your hash differs, the numbers in this project may not match.
+  SHA-256 `4e7a243b13f6e3d40f682a9a0cfd59c70910ca6c5a4289f71ca1f25efbd8e3de`. If your hash differs, the numbers in this project may not match;
+  `make data` checks it, and `make validate` checks each CSV and the converted tables against `configs/data_contract.json` (D60).
 
 ## How to reproduce
 
@@ -36,6 +37,7 @@ unzip data/home-credit-default-risk.zip -d data/home-credit-default-risk/
 # 2. Install the package, then rebuild everything behind the Phase 2 reports
 make install
 make interim     # raw CSV -> compact Parquet in data/interim (about 1 minute, 513 MB)
+make validate    # rules, plus a check that this is the release recorded in configs/data_contract.json
 make leakage     # configs/feature_availability.csv and reports/leakage_table.md
 make eda         # re-executes notebooks/01_eda.ipynb
 ```
@@ -115,7 +117,7 @@ children, housing type, region rating. They are flagged for the governance pack 
 ## Data quality summary
 
 - 67 of 122 main-table columns have missing values; 49 are more than 40% missing. The 47 building-statistics columns are missing together for 47.4% of applicants, and missingness carries signal (9.3% vs 7.0% default).
-- Placeholders: 365243 ("no date") in `DAYS_EMPLOYED` and five `previous_application` date columns; `XNA` and `XAP` codes in several categorical columns; `-1` in `SELLERPLACE_AREA`; 0 in `AMT_CREDIT` for refused earlier applications; 64 and 65 in `OWN_CAR_AGE` (3,334 rows); 0 in `DAYS_LAST_PHONE_CHANGE` (37,672 rows). `EXT_SOURCE_2` values near 0 were checked and are real (D55).
+- Placeholders: 365243 ("no date") in `DAYS_EMPLOYED` and five `previous_application` date columns; `XNA` and `XAP` codes in several categorical columns; `-1` in `SELLERPLACE_AREA`; 0 in `AMT_CREDIT` for refused earlier applications; 64 and 65 in `OWN_CAR_AGE` (3,334 rows); 0 in `DAYS_LAST_PHONE_CHANGE` (37,672 rows). `EXT_SOURCE_2` values near 0 were checked and are real (D55). Kaggle's test file has one region rating of −1 (recoded to missing, D60).
 - Errors and outliers: one income of 117,000,000; 134 bureau end dates about 110 years in the past; 20 bureau credits that end before they start; 392 instalments paid more than a year early.
 - Near-constant columns: `FLAG_MOBIL` and six document flags differ in fewer than 100 rows.
 - Near-duplicates: `OBS_30` / `OBS_60_CNT_SOCIAL_CIRCLE` (r = 0.998), `AMT_CREDIT` / `AMT_GOODS_PRICE` (0.987), the two region ratings (0.951), `FLAG_EMP_PHONE` / the employment marker.

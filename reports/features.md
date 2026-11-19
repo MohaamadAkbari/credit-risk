@@ -1,8 +1,8 @@
 # Data pipeline and features (Phase 3)
 
 *18 November 2026, revised 19 November after the Phase 2 manager review (`docs/04_manager_review_phase2.md`).
-Code: `src/credit_risk/data/` and `src/credit_risk/features/`. Rebuild: `make phase3` (split, features, shapes).
-Machine-readable record: `configs/split_manifest.json`, `configs/feature_manifest.json`, `configs/feature_shapes.csv`,
+Code: `src/credit_risk/data/` and `src/credit_risk/features/`. Rebuild: `make phase3` (validate, split, features, shapes).
+Machine-readable record: `configs/data_contract.json`, `configs/split_manifest.json`, `configs/feature_manifest.json`, `configs/feature_shapes.csv`,
 `configs/reason_codes.yaml`.*
 
 ## Summary
@@ -11,20 +11,23 @@ The pipeline turns the eight raw tables into one row per applicant for each abla
 stage A** (application form), **116 for B** (+ credit-bureau information) and **157 for C** (+ Home Credit history).
 It applies every cleaning rule from the leakage table, reads only columns the leakage table allows, and runs in about
 17 seconds (peak memory 3.3 GB). The train / validation / test split keeps each person in one fold, and it is fixed and
-fingerprinted. 46 unit tests cover the rules; none needs the Kaggle data.
+fingerprinted. Nothing is built until the data passes its checks (D60), and every feature table carries a content
+fingerprint that later phases verify on reading (D61). 62 unit tests cover the rules; none needs the Kaggle data.
 
 **What changed on 19 November.** The split is now by person, not by application (D49). Seven bureau-derived
 main-table columns moved from stage A to B (D50), which is why A went from 93 to 83 features while B and C kept 116
 and 157. Application hour and weekday are excluded (D51). Two duplicates were dropped and reason-code groups were added
-(D52). Two more codes are recoded (D55). A training-fold feature-shape table was added (D57).
+(D52). Two more codes are recoded (D55). A training-fold feature-shape table was added (D57). Data checks and
+feature fingerprints were added (D60, D61).
 
 ## How it fits together
 
 ```mermaid
 flowchart LR
     R[Raw CSVs] -->|make interim| I[Parquet, data/interim]
-    I -->|make split| S[split.parquet + locked manifest]
-    I -->|make features| C[Cleaning rules] --> F[Aggregations per applicant]
+    I -->|make validate| V{Rules and recorded release}
+    V -->|make split| S[split.parquet + locked manifest]
+    V -->|make features| C[Cleaning rules] --> F[Aggregations per applicant]
     F --> A[features_A] & B[features_B] & CC[features_C]
     I --> AU[audit.parquet: gender, age band, thin file, product]
     S & CC -->|make shapes| SH[feature_shapes: train fold only]
@@ -33,9 +36,10 @@ flowchart LR
 
 | Step | Module | Output |
 | --- | --- | --- |
+| Data checks | `credit_risk.data.validate` | Pass or fail; `configs/data_contract.json` records the release |
 | Cleaning | `credit_risk.data.clean` | Applied inside each feature module; nothing fitted |
 | Split | `credit_risk.data.split` | `data/processed/split.parquet`, `configs/split_manifest.json` |
-| Features | `credit_risk.features.*` | `data/processed/features_{A,B,C}.parquet` |
+| Features | `credit_risk.features.*` | `data/processed/features_{A,B,C}.parquet`, fingerprints in `configs/feature_manifest.json` |
 | Audit table | `credit_risk.features.audit` | `data/processed/audit.parquet` (never a model input) |
 | Feature shapes | `credit_risk.features.shapes` | `reports/feature_shapes.md`, `configs/feature_shapes.csv` |
 | Preprocessing | `credit_risk.features.preprocess` | An unfitted scikit-learn transformer, fitted on the train fold inside the model pipeline |
@@ -62,7 +66,7 @@ to overwrite a different result unless run with `--relock` (`make split ARGS=--r
 
 | Table | Rule |
 | --- | --- |
-| application | `DAYS_EMPLOYED = 365243` to missing plus flag `EMPLOYED_NA`; `OWN_CAR_AGE` 64/65 to missing plus `CAR_AGE_CODED`; `DAYS_LAST_PHONE_CHANGE = 0` to missing plus `PHONE_CHANGE_DAY0` (D55); gender `XNA` to missing (audit only) |
+| application | `DAYS_EMPLOYED = 365243` to missing plus flag `EMPLOYED_NA`; `OWN_CAR_AGE` 64/65 to missing plus `CAR_AGE_CODED`; `DAYS_LAST_PHONE_CHANGE = 0` to missing plus `PHONE_CHANGE_DAY0` (D55); gender `XNA` to missing (audit only); region ratings outside 1–3 to missing (none in training; one −1 in Kaggle's test, D60) |
 | bureau | Drop the 17 rows updated after the application; dates below −40,000 days and end dates before the start to missing |
 | bureau_balance | Months up to 0 (the application month); `--bb-max-month -1` builds the stricter ablation |
 | previous_application | 365243 in five date columns and −1 in `SELLERPLACE_AREA` to missing; `AMT_CREDIT` only for approved applications; tiny negative down payments to 0 |
@@ -96,6 +100,26 @@ grows, 28 rise steadily, 13 are irregular and 1 is hump-shaped. 14 are categoric
 (IV below 0.02) to have a shape. The steady ones get a monotone-constraint suggestion (+1 / −1) for Phase 5. The
 irregular ones stay unconstrained and get non-monotone scorecard bins in Phase 4. They include loan amount, goods
 price and credit term, whose rates zig-zag because amounts and terms cluster at round values.
+
+## Data checks and fingerprints (D60, D61)
+
+`make validate` runs before the split and the features, and they are not built if it fails. It reads one column at a
+time (8 seconds for all 58.5 million rows, raw-file hashes included) and reports two kinds of failure:
+
+| Kind | What it checks | What a failure means |
+| --- | --- | --- |
+| **Rules**, true of any release | Keys present and unique; label 0 or 1; flags 0/1 or Y/N; normalised scores in [0, 1]; ratings 1–3; hours 0–23; ages 18–100; counts and application amounts not negative; no past date after the application, except planned end dates and the 17 bureau rows the pipeline drops; columns match the leakage table; every related row points at a known applicant; no applicant in both Kaggle files | The data is wrong |
+| **Profile** of the release this project was built on (`configs/data_contract.json`) | Row counts, columns, types, missing counts, minimum and maximum, category levels, and the size and SHA-256 of every raw CSV | The data is different (another download or a changed conversion), so every reported number may move |
+
+On the current data both pass. The rules found one problem the EDA had missed: Kaggle's test file has a region
+rating of −1 in one row. It is now recoded to missing (the training data has none, so no feature changed) and listed
+as a known exception. `make data` checks the downloaded archive against the recorded SHA-256 before unzipping.
+
+Each output table has a **content fingerprint** in `configs/feature_manifest.json`: a SHA-256 of its column names,
+types, index and values, which does not depend on the Parquet writer. Two builds in a row give the same fingerprints.
+`make verify` recomputes them, and Phase 4 onwards reads features through `credit_risk.features.build.load_stage`,
+which refuses a table that differs from the manifest. A result can therefore be traced to the exact features, split
+(`configs/split_manifest.json`) and data release behind it.
 
 ## Guards against leakage and unfairness
 

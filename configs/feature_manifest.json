@@ -222,5 +222,27 @@
     "CC_LIMIT_LATEST_SUM"
    ]
   }
+ },
+ "files": {
+  "features_A": {
+   "rows": 307511,
+   "columns": 83,
+   "sha256": "5a5fafb7a8e6eb8e0b83db626b6c80096c53b95adc4a1f533456b95cad951dd4"
+  },
+  "features_B": {
+   "rows": 307511,
+   "columns": 116,
+   "sha256": "5ca4c17872ecb7499545f99f5629de1acbf55405da7673f0cb7112bfe889651a"
+  },
+  "features_C": {
+   "rows": 307511,
+   "columns": 157,
+   "sha256": "a34df8c2c5a2337f1c0a383d431faf2ca54da6b3860dafeb7f6a54689f311a66"
+  },
+  "audit": {
+   "rows": 307511,
+   "columns": 5,
+   "sha256": "42e1cea37df88012218c8a0dd661066873b94f0ea106f0d9a77757bb9ff07ae9"
+  }
  }
 }

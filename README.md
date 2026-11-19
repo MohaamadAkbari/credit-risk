@@ -22,7 +22,7 @@ from the economics, not from a 0.5 threshold.
 | --- | --- |
 | **Decision** | Approve, manual review or decline, per application |
 | **Primary metric** | Expected profit per 1,000 of principal applied for, so each loan counts by its amount ([ADR 0001](docs/decisions/0001-primary-metric.md), [ADR 0003](docs/decisions/0003-unit-of-profit.md)) |
-| **Target** | At least +10% profit over approving everyone (to be re-confirmed under amount weighting); scorecard comparison reported with a confidence interval |
+| **Target** | At least +10% profit over approving everyone (amount-weighted; re-confirmed 19 Nov); scorecard comparison reported with a confidence interval |
 | **Guardrails** | Default rate among approved loans ≤ 6.5%; approval-rate ratio ≥ 0.8 by gender and age band; p99 latency < 1 s; four reason codes per decline |
 | **Out of scope** | Pricing, credit limits, collections, a full solution to reject inference |
 
@@ -66,8 +66,9 @@ From [the EDA](reports/eda_summary.md) and a [preliminary profit check](reports/
 │   ├── economics.yaml             margin, LGD, review cost, profit weighting, fairness bands, guardrails
 │   ├── reason_codes.yaml          one decline reason per group of related features
 │   ├── feature_availability.csv   leakage verdict for all 218 columns (generated)
+│   ├── data_contract.json         the data release this project was built on, checked by make validate
 │   ├── split_manifest.json        locked train / valid / test fingerprints
-│   ├── feature_manifest.json      features per block and stage (generated)
+│   ├── feature_manifest.json      features per block and stage, with content fingerprints (generated)
 │   ├── data_dictionary.csv        meaning, kind, unit and range of all 218 columns (generated)
 │   └── feature_shapes.csv         risk shape and information value per feature, training fold (generated)
 ├── data/README.md                 data card; the data itself is not committed
@@ -75,15 +76,15 @@ From [the EDA](reports/eda_summary.md) and a [preliminary profit check](reports/
 │   ├── 01_problem_brief.md
 │   ├── 02_ml_formulation.md
 │   ├── 04_manager_review_phase2.md
-│   ├── decision_log.md            D01–D57
+│   ├── decision_log.md            D01–D61
 │   └── decisions/                 architecture decision records
 ├── notebooks/01_eda.ipynb         exploratory analysis (executed)
 ├── reports/                       EDA summary, leakage table, features, preliminary check, figures
 ├── scripts/                       preliminary profit check and the Phase 2 review checks (exploration, not the pipeline)
 ├── src/credit_risk/               the package
-│   ├── data/                      interim conversion, cleaning rules, split, leakage table
+│   ├── data/                      interim conversion, data checks, cleaning rules, split, leakage table
 │   └── features/                  per-table aggregations, stage builder, audit table, preprocessor, shapes
-├── tests/                         47 unit tests (run without the data)
+├── tests/                         62 unit tests (run without the data)
 └── monitoring/                    (Phase 9)
 ```
 
@@ -96,8 +97,10 @@ Requires Python 3.10+ and a Kaggle account that has accepted the
 make install       # pip install -e ".[dev]"
 make data          # download and unzip into data/home-credit-default-risk/ (needs Kaggle API credentials)
 make interim       # raw CSV -> Parquet in data/interim/ (about 1 minute)
+make validate      # check the data against rules and the recorded release (split and features run it first)
 make phase2        # rebuild the leakage table, re-execute the EDA notebook, run the review checks
 make phase3        # locked person-grouped split, feature tables for stages A, B, C, feature shapes
+make verify        # check the feature tables against their fingerprints
 make test lint     # unit tests and static checks (no data needed)
 ```
 

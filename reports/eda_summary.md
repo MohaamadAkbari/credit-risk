@@ -103,6 +103,7 @@ is missing for every applicant without a car, so `FLAG_OWN_CAR` already covers i
 | `OWN_CAR_AGE` = 64 or 65 *(19 Nov)* | 2,443 + 891 car owners, against 1–2 rows at 63 and 69 | Code, not an age: missing + flag |
 | `DAYS_LAST_PHONE_CHANGE` = 0 *(19 Nov)* | 37,672 rows (12.3%) against 2,812 at −1; default 9.7% | Process value: missing + flag |
 | `EXT_SOURCE_2` below 0.001 *(19 Nov)* | 202 rows, continuous tail, default 43.6% | Real low scores: kept |
+| Region rating −1 in Kaggle's test *(19 Nov, `make validate`)* | 1 row; none in training | Missing (D60) |
 | Income of 117,000,000 | 1 row (250 above 1,000,000) | Cap at the training 99.9th percentile |
 | Bureau dates about 110 years ago | 134 end dates, 95 update dates | Missing |
 | Bureau credits that end before they start | 20 | Missing end date |

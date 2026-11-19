@@ -18,6 +18,7 @@ def _na_where(s: pd.Series, mask) -> pd.Series:
     return s.mask(mask)
 
 
+REGION_RATINGS = (1, 2, 3)
 CAR_AGE_CODES = (64, 65)  # 2,443 + 891 car owners, against 1-2 rows at 63 and 69: codes, not ages
 
 
@@ -29,6 +30,8 @@ def clean_application(df: pd.DataFrame) -> pd.DataFrame:
     - DAYS_LAST_PHONE_CHANGE = 0: 37,672 rows against 2,812 at -1, so a process value rather than
       a real change date (flag PHONE_CHANGE_DAY0; Phase 2 review, finding 5)
     - CODE_GENDER = 'XNA' (4 rows, audit only)
+    - REGION_RATING_* outside 1-3: missing. None in application_train; one -1 in Kaggle's application_test
+      (found by `make validate`, D60), which Phase 9 scores as a shifted population
     """
     df = df.copy()
     if "DAYS_EMPLOYED" in df:
@@ -43,6 +46,9 @@ def clean_application(df: pd.DataFrame) -> pd.DataFrame:
         day0 = df["DAYS_LAST_PHONE_CHANGE"] == 0
         df["PHONE_CHANGE_DAY0"] = day0.astype("int8")
         df["DAYS_LAST_PHONE_CHANGE"] = _na_where(df["DAYS_LAST_PHONE_CHANGE"], day0)
+    for c in ("REGION_RATING_CLIENT", "REGION_RATING_CLIENT_W_CITY"):
+        if c in df:
+            df[c] = _na_where(df[c], ~df[c].isin(REGION_RATINGS) & df[c].notna())
     if "CODE_GENDER" in df:
         df["CODE_GENDER"] = df["CODE_GENDER"].astype("object").where(df["CODE_GENDER"] != "XNA")
     return df

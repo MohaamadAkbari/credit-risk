@@ -1,12 +1,14 @@
 """End to end on generated mini-tables: stage tables nest (A in B in C), one row per applicant,
 no label or protected column, and the audit table is separate."""
+import json
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from credit_risk.features import application, audit, bureau, installments, monthly, previous
-from credit_risk.features.build import build_all
+from credit_risk.features.build import build_all, check, fingerprint, load_stage
 
 AVAIL = Path(__file__).resolve().parents[1] / "configs" / "feature_availability.csv"
 N = 40
@@ -58,3 +60,30 @@ def test_build_all_on_mini_tables(tmp_path):
     assert c.filter(like="_COUNT").isna().sum().sum() == 0          # no rows in a table = zero, not missing
     assert set(pd.read_parquet(out / "audit.parquet").columns) == {"GENDER", "AGE", "AGE_BAND", "THIN_FILE", "CONTRACT_TYPE"}
     assert m["stages"]["C"]["features"] == c.shape[1]
+    assert set(m["files"]) == {"features_A", "features_B", "features_C", "audit"}
+    assert m["files"]["features_C"]["sha256"] == fingerprint(c)
+
+
+def test_fingerprint_follows_content_not_storage():
+    df = pd.DataFrame({"X": [1.0, np.nan, 3.0], "C": pd.Categorical(["a", "b", "a"])},
+                      index=pd.Index([1, 2, 3], name="SK_ID_CURR"))
+    same = df.copy()
+    same["C"] = same["C"].cat.reorder_categories(["b", "a"])           # same values, other category order
+    assert fingerprint(df) == fingerprint(same)
+    changed = df.copy()
+    changed.loc[3, "X"] = 3.0001
+    assert fingerprint(changed) != fingerprint(df)
+    assert fingerprint(df.rename(columns={"X": "Y"})) != fingerprint(df)
+
+
+def test_check_and_load_stage_refuse_a_changed_table(tmp_path):
+    df = pd.DataFrame({"X": [1.0, 2.0]}, index=pd.Index([1, 2], name="SK_ID_CURR"))
+    df.to_parquet(tmp_path / "features_A.parquet")
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({"files": {"features_A": {"sha256": fingerprint(df)}}}))
+    assert check(tmp_path, manifest) == []
+    assert load_stage("A", tmp_path, manifest).equals(df)
+    df.assign(X=[1.0, 2.5]).to_parquet(tmp_path / "features_A.parquet")
+    assert len(check(tmp_path, manifest)) == 1
+    with pytest.raises(ValueError, match="differs"):
+        load_stage("A", tmp_path, manifest)

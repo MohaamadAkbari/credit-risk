@@ -19,6 +19,11 @@ def test_application_recodes_employment_marker_and_xna_gender():
     assert out.CODE_GENDER.isna().tolist() == [False, True]
 
 
+def test_application_sets_impossible_region_rating_to_missing():
+    out = clean_application(pd.DataFrame({"REGION_RATING_CLIENT_W_CITY": [1.0, -1.0, 3.0, np.nan]}))
+    assert out.REGION_RATING_CLIENT_W_CITY.isna().tolist() == [False, True, False, True]
+
+
 def test_application_recodes_car_age_codes_and_phone_change_day_zero():
     app = pd.DataFrame({"OWN_CAR_AGE": [5.0, 64.0, 65.0, np.nan], "DAYS_LAST_PHONE_CHANGE": [0.0, -1.0, -300.0, 0.0]})
     out = clean_application(app)
