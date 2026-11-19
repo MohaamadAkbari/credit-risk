@@ -53,6 +53,7 @@ flowchart LR
 From [the EDA](reports/eda_summary.md) and a [preliminary profit check](reports/preliminary_check.md):
 
 - **8.07%** of applicants have payment difficulty (**7.52%** weighted by loan amount: large loans are safer). Thin-file applicants (no bureau record, 14.3%) are riskier, **10.1% vs 7.7%**, and 96.9% of them lack the third external score.
+- **Every column is documented** in a [data dictionary](reports/data_dictionary.md) (group, kind, unit, range, levels, missing share, IV, how to chart it), and a stakeholder dashboard, "Credit risk: what the data says", draws the findings from aggregated data (`make dashboard`).
 - **No leakage found:** every event date is on or before the application; the only later dates are contracted end dates and 17 bureau rows, which are dropped ([leakage table](reports/leakage_table.md)).
 - **Gender and age can be reconstructed from other columns** (ROC-AUC 0.89 and R² 0.72), so excluding them is not enough; fairness is judged on outcomes.
 - The pipeline builds **83 / 116 / 157 features** for stages A / B / C in about 17 seconds, with a split that keeps each person in one fold; 18 of the 30 strongest single features carry bureau or history information ([features report](reports/features.md), [feature shapes](reports/feature_shapes.md)).
@@ -67,6 +68,7 @@ From [the EDA](reports/eda_summary.md) and a [preliminary profit check](reports/
 │   ├── feature_availability.csv   leakage verdict for all 218 columns (generated)
 │   ├── split_manifest.json        locked train / valid / test fingerprints
 │   ├── feature_manifest.json      features per block and stage (generated)
+│   ├── data_dictionary.csv        meaning, kind, unit and range of all 218 columns (generated)
 │   └── feature_shapes.csv         risk shape and information value per feature, training fold (generated)
 ├── data/README.md                 data card; the data itself is not committed
 ├── docs/
@@ -81,7 +83,7 @@ From [the EDA](reports/eda_summary.md) and a [preliminary profit check](reports/
 ├── src/credit_risk/               the package
 │   ├── data/                      interim conversion, cleaning rules, split, leakage table
 │   └── features/                  per-table aggregations, stage builder, audit table, preprocessor, shapes
-├── tests/                         44 unit tests (run without the data)
+├── tests/                         47 unit tests (run without the data)
 └── monitoring/                    (Phase 9)
 ```
 

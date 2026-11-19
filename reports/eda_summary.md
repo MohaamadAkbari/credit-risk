@@ -186,6 +186,34 @@ The amounts and annuities are the strongest separators. The enquiry counts look 
 time buckets, so the short-window `AMT_REQ_CREDIT_BUREAU_*` columns are a drift risk to test in Phase 5 (ablation
 without them) and to monitor in Phase 9.
 
+## 9. What each column is, and how to chart it
+
+*(19 Nov)* The first pass documented each column's leakage verdict, but not what the column *is*. The data dictionary
+(`reports/data_dictionary.md`, `configs/data_dictionary.csv`, `make dictionary`) now gives, for all 218 columns of the
+seven training tables, its business group, kind of value, unit, Kaggle's description and note, typical range (1st to
+99th percentile and median, codes removed, days shown as years), the most common levels, the share missing, and, for
+main-table columns, its information value on the training fold.
+
+| Kind | Columns | Unit | How it is charted |
+| --- | --- | --- | --- |
+| score | 50 | normalised 0–1 by the provider | histogram, default rate per decile |
+| flag | 37 | yes / no | share and default rate for each value |
+| category | 35 | text levels | bars per level sorted by default rate, rare levels grouped |
+| amount | 29 | unnamed currency | histogram on a log scale, default rate per bin |
+| count | 27 | count | bar per value, large values capped |
+| days | 17 | days before the application | histogram in years |
+| key | 12 | identifier | join coverage |
+| number, months, rating, label | 11 | hours, years, codes; months; levels 1–3; outcome | histogram or bars |
+
+The columns fall into 20 groups: 12 business families in the main table (loan requested, income and work, external
+scores, building statistics and so on) and one per related table, plus identifiers and the outcome. Kaggle's own notes
+say which columns are normalised (54), relative in time (19), hashed IDs (9), rounded (the 2 hour columns), recoded
+(bureau currency) and grouped (earlier interest-rate group). Planned end dates are positive day counts, so they show as
+negative years before the application.
+
+The stakeholder dashboard, "Credit risk: what the data says", draws these findings from aggregated datasets made by
+`make dashboard` (`scripts/dashboard_data.py`, `reports/dashboard/`). It holds no applicant-level rows.
+
 ## What Phase 3 inherits
 
 1. Drop the 17 post-application bureau rows; recode 365243 and the other markers (including car age 64/65 and phone change day 0); cap the outliers listed in section 4.

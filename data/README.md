@@ -123,6 +123,10 @@ children, housing type, region rating. They are flagged for the governance pack 
 
 Full list with counts: `notebooks/01_eda.ipynb`, sections 4 and 10. Handling rules: `reports/leakage_table.md`.
 
+## Column dictionary
+
+What each of the 218 columns is (group, kind, unit, description, range, levels, missing share, information value, Kaggle's note, and how to chart it): `reports/data_dictionary.md`, machine-readable in `configs/data_dictionary.csv` (`make dictionary`).
+
 ## Intended use
 
 For this portfolio project only: training and evaluating a credit decision policy under the competition terms.

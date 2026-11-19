@@ -124,6 +124,13 @@ its recommendations; the owner may overturn any of them.
 | D56 | **Fairness age bands fixed:** <25, 25–34, 35–44, 45–54, 55–64, 65+ (as in the audit table and `configs/economics.yaml`). Thin-file results are reported together with age, because thin-file applicants skew young (7.7% under 25 vs 3.4%) | Fixing the bands before any model exists prevents choosing them after seeing results. Every gender × age cell has at least 1,504 applicants (men 65+, default 5.6% ± 1.2 points) | Decide in Phase 6 | Provisional |
 | D57 | **Feature shapes, from the training fold only, guide scorecard bins and monotone constraints** (`reports/feature_shapes.md`, `configs/feature_shapes.csv`): +1 / −1 only for features whose risk rises or falls steadily; none for hump-shaped or irregular ones such as loan amount and term | A monotone constraint on a non-monotone feature would force a wrong shape; the training fold keeps validation and test unseen | Constrain every feature by intuition | Provisional |
 
+## K. Stakeholder reporting (19 November 2026)
+
+| ID | Decision | Rationale | Alternatives considered | Status |
+| --- | --- | --- | --- | --- |
+| D58 | **A data dictionary is generated for every column** (`make dictionary`): group, kind, unit, description, range, levels, missing share, Kaggle's note, IV on the training fold, and the chart that suits its kind | The EDA covered leakage per column but not what each column means or how to read it | A hand-written dictionary (drifts from the data) | Accepted |
+| D59 | **The stakeholder dashboard reads only aggregated, fixed files** made by `make dashboard` (`reports/dashboard/`), each carrying the script that made it; no applicant-level rows leave the machine | The data cannot be redistributed under the Kaggle rules, and aggregates are all a stakeholder needs | Live queries (no connector holds the data); applicant-level files | Accepted |
+
 ## Open items
 
 1. Decline cap (D14), after experiments E4 and E6 (the term-scaled margin raises the preliminary cutoff's decline rate to about 16%).

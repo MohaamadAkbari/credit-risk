@@ -4,7 +4,7 @@ INTERIM := data/interim
 NB      := notebooks/01_eda.ipynb
 
 .DEFAULT_GOAL := help
-.PHONY: help install data interim leakage eda checks preliminary phase2 split features shapes phase3 test lint
+.PHONY: help install data interim leakage dictionary eda checks dashboard preliminary phase2 split features shapes phase3 test lint
 
 help:  ## List targets
 	@grep -E '^[a-z0-9]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -28,6 +28,12 @@ interim: $(INTERIM)/application_train.parquet  ## Raw CSV -> Parquet in data/int
 leakage: interim  ## Rebuild the leakage table (configs/feature_availability.csv, reports/leakage_table.md)
 	$(PY) -m credit_risk.data.availability
 
+dictionary: interim  ## Data dictionary for all 218 columns (configs/data_dictionary.csv, reports/data_dictionary.md)
+	$(PY) -m credit_risk.data.dictionary
+
+dashboard: dictionary shapes  ## Aggregated datasets for the stakeholder dashboard (reports/dashboard/*.json)
+	$(PY) scripts/dashboard_data.py
+
 eda: interim  ## Re-execute the EDA notebook in place (figures go to reports/figures)
 	$(PY) -m jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=900 $(NB)
 
@@ -37,7 +43,7 @@ checks:  ## Checks added by the Phase 2 manager review (also run in notebook sec
 preliminary:  ## Rough profit check on the main table (exploration, not a baseline)
 	$(PY) scripts/preliminary_check.py $(RAW)
 
-phase2: leakage eda checks  ## Everything behind the Phase 2 reports
+phase2: leakage dictionary eda checks  ## Everything behind the Phase 2 reports
 
 split: interim  ## Build the person-grouped train/valid/test split; refuses to change a locked split (add ARGS=--relock)
 	$(PY) -m credit_risk.data.split $(ARGS)
