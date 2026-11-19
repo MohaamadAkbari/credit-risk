@@ -59,7 +59,7 @@ simplifications:
   reviewer_wrongly_declines_good: false   # optimistic: real reviewers sometimes do
 
 guardrails:                 # D12 accepted; D13, D15, D16 proposed; D14 deferred until E4
-  min_profit_lift_vs_approve_all: 0.10    # D12, measured amount-weighted (D54); preliminary +9.2% amount-weighted, +11.2% unit: owner to re-confirm
+  min_profit_lift_vs_approve_all: 0.10    # D12, measured amount-weighted (D54); preliminary +9.2% amount-weighted, +11.2% unit; re-confirmed by the owner 19 Nov
   profit_vs_scorecard: reported_only      # reported with a confidence interval; not a pass/fail gate (D12)
   max_default_rate_among_approved: 0.065
   max_decline_rate: 0.10                  # decided after E4 whether it overrides the cutoff (D14) (preliminary: cutoff declines 10-11%; about 16% with the term-scaled margin, E6)

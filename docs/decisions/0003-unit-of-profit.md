@@ -1,6 +1,6 @@
 # ADR 0003 — Weight profit by loan amount; test a term-scaled margin
 
-**Date:** 2026-11-19 · **Status:** Accepted (engineer, Phase 2 review); target re-confirmation open · **Related:** D05, D06, D10, D12, D14, D54, E6
+**Date:** 2026-11-19 · **Status:** Accepted (engineer, Phase 2 review); target re-confirmed by the owner on 19 November · **Related:** D05, D06, D10, D12, D14, D54, E6
 
 ## Context
 
@@ -66,7 +66,8 @@ D12 (+10% over approving everyone) was confirmed by the owner on unit-weighted n
 measure the preliminary model reaches **+9.2%**, just under the target. The target is **kept unchanged** and is now
 measured amount-weighted. The preliminary model uses 17 main-table inputs; stages B and C add the bureau and history
 signal (18 of the 30 strongest single features carry bureau or history information), so the target is still plausible, but it is no longer shown to be
-reachable. **The owner should re-confirm D12 under this measure**, or restate it, after the Phase 4 baselines.
+reachable. **The owner re-confirmed D12 under this measure on 19 November 2026:** the target stays +10% over approving
+everyone, amount-weighted. Phase 4 baselines are judged against it as it stands.
 
 ## Alternatives considered
 

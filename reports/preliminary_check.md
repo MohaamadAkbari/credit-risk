@@ -45,8 +45,8 @@ What changes:
 
 1. **The lift over approving everyone is about 2 points lower when money is counted.** Declining risky applicants saves
    less than the count suggested, because the declined loans are smaller than average. The preliminary model reaches
-   +9.2%, **just under the +10% target (D12)**. The target is kept and now measured amount-weighted; the owner is asked
-   to re-confirm it after the Phase 4 baselines, which use the bureau and history features this check does not.
+   +9.2%, **just under the +10% target (D12)**. The target is kept and now measured amount-weighted, and the owner
+   re-confirmed it on 19 November. The Phase 4 baselines, which use the bureau and history features this check does not, are judged against it.
 2. **The cutoff itself does not move** with a flat margin: margin and loss both scale with the amount, so break-even
    stays 16.7% for every loan.
 3. **A term-scaled margin changes the policy.** Each loan gets its own break-even (about 8% for short loans to 23% for

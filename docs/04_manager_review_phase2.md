@@ -23,7 +23,7 @@ what "better" means and how the results are read.
 
 | # | Severity | Finding | Affects | Status (19 Nov) |
 | --- | --- | --- | --- | --- |
-| 1 | High | Profit treats every loan as size 1; loan size and term were never analysed | D05, D06, D12, E1–E5 | Fixed: D54, ADR 0003, E6; **D12 to re-confirm** |
+| 1 | High | Profit treats every loan as size 1; loan size and term were never analysed | D05, D06, D12, E1–E5 | Fixed: D54, ADR 0003, E6; D12 re-confirmed by the owner (19 Nov) |
 | 2 | High | Thin-file applicants lack `EXT_SOURCE_3` and bureau-enquiry data; three missingness findings are one | D25, D30, D39, reason codes | Fixed: D50, D53, E7 |
 | 3 | Medium | Shape of risk against key inputs not examined; some are not monotonic | Phase 4 scorecard, Phase 5 monotone model | Fixed: D57, `reports/feature_shapes.md` |
 | 4 | Medium | About 588 people appear under two application IDs; half of them are split across folds | D20, locked test set | Fixed: D49, split relocked |
@@ -209,7 +209,7 @@ D49–D57 record what was decided, and the owner may overturn any of them.
 
 | # | What was done | Where |
 | --- | --- | --- |
-| 1 | Profit is now weighted by loan amount; a term-scaled margin is experiment E6. Under the new measure the preliminary model gains **+9.2%** over approving everyone, under the +10% target, so D12 is kept but **must be re-confirmed** after Phase 4. With per-loan break-evens under the term-scaled margin it would decline about 16% of applicants, which bears on the 10% cap (D14) | ADR 0003, D54, `configs/economics.yaml`, `scripts/preliminary_check.py`, `reports/preliminary_check.md` |
+| 1 | Profit is now weighted by loan amount; a term-scaled margin is experiment E6. Under the new measure the preliminary model gains **+9.2%** over approving everyone, under the +10% target, so D12 was put back to the owner, who **re-confirmed it** under amount weighting on 19 November. With per-loan break-evens under the term-scaled margin it would decline about 16% of applicants, which bears on the 10% cap (D14) | ADR 0003, D54, `configs/economics.yaml`, `scripts/preliminary_check.py`, `reports/preliminary_check.md` |
 | 2 | The seven bureau-derived main-table columns moved to stage B; stage A uses external scores 1 and 2 only. "No or limited credit-bureau history" is one decline reason, at most once, and its use is measured. E7 tests a wider review band for thin-file applicants | D50, D53, `configs/reason_codes.yaml`, `credit_risk.features.application` |
 | 3 | Shape and information value of all 157 features on the training fold: 17 steadily falling, 28 rising, 13 irregular, 1 hump. Loan amount, goods price and term are irregular, so they get no monotone constraint | D57, `make shapes`, `reports/feature_shapes.md` |
 | 4 | The split now assigns whole persons to folds and was relocked (0 people span folds; fold default rates 8.07%, 8.07%, 8.08%) | D49, `credit_risk.data.split`, `configs/split_manifest.json` |
@@ -225,5 +225,5 @@ D49–D57 record what was decided, and the owner may overturn any of them.
 Every number in the resolution comes from `make checks` (notebook section 10), `make shapes` or `make preliminary`.
 Tests: 44 pass (10 new). Lint is clean.
 
-**Still with the owner:** re-confirm D12 under amount weighting; give a business view on D53 (thin-file decline reason);
-and, as before, D13, D14, D15 and D16.
+**Still with the owner:** a business view on D53 (thin-file decline reason); and, as before, D13, D14, D15 and D16.
+D12 was re-confirmed under amount weighting on 19 November.
