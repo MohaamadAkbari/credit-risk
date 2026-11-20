@@ -16,20 +16,21 @@
 | `ok_planned` | Known at application; positive values are planned (contracted) future dates |
 | `ok_filter` | Known at application except a few rows, which are dropped |
 | `review` | Assumed known at application; timing or source not documented, flagged |
+| `exclude` | Known at application, but excluded from inputs by policy: describes the process, not the applicant |
 
-**Stage** is the ablation in which a column may first enter the model (D25): A main table, B + bureau tables, C + Home Credit history. **Proxy risk** marks columns that predict gender or age well (see `reports/eda_summary.md`, section 7).
+**Stage** is the ablation in which a column may first enter the model (D25): A application form, B + credit-bureau information (the bureau tables and the seven bureau-derived main-table columns, D50), C + Home Credit history. **Proxy risk** marks columns that predict gender or age well (see `reports/eda_summary.md`, section 7).
 
 ## Count by table
 
-| Table | `key` | `label` | `ok` | `ok_filter` | `ok_planned` | `ok_recode` | `protected` | `review` |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| POS_CASH_balance | 2 | 0 | 6 | 0 | 0 | 0 | 0 | 0 |
-| application_train | 1 | 1 | 109 | 0 | 0 | 2 | 2 | 7 |
-| bureau | 2 | 0 | 13 | 1 | 1 | 0 | 0 | 0 |
-| bureau_balance | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 0 |
-| credit_card_balance | 2 | 0 | 21 | 0 | 0 | 0 | 0 | 0 |
-| installments_payments | 2 | 0 | 6 | 0 | 0 | 0 | 0 | 0 |
-| previous_application | 2 | 0 | 30 | 0 | 1 | 4 | 0 | 0 |
+| Table | `exclude` | `key` | `label` | `ok` | `ok_filter` | `ok_planned` | `ok_recode` | `protected` | `review` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| POS_CASH_balance | 0 | 2 | 0 | 6 | 0 | 0 | 0 | 0 | 0 |
+| application_train | 2 | 1 | 1 | 105 | 0 | 0 | 4 | 2 | 7 |
+| bureau | 0 | 2 | 0 | 13 | 1 | 1 | 0 | 0 | 0 |
+| bureau_balance | 0 | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 0 |
+| credit_card_balance | 0 | 2 | 0 | 21 | 0 | 0 | 0 | 0 | 0 |
+| installments_payments | 0 | 2 | 0 | 6 | 0 | 0 | 0 | 0 | 0 |
+| previous_application | 0 | 2 | 0 | 30 | 0 | 1 | 4 | 0 | 0 |
 
 ## Findings that change the pipeline
 
@@ -40,12 +41,16 @@
 5. **`bureau_balance` month 0** is the application month itself. Use it, but test month <= -1 as an ablation.
 6. **Seven columns have undocumented timing** (`review`): the three external scores and the four social-circle counts. They are kept on the assumption that the lender buys them at application; a real deployment must confirm this with the provider.
 7. **Gender and age are excluded, but other columns stand in for them** (proxy risk). Excluding them does not make the model blind; the fairness audit must measure outcomes.
+8. **Seven main-table columns are bureau information** (`EXT_SOURCE_3`, six `AMT_REQ_CREDIT_BUREAU_*`): they are almost always missing when the applicant has no bureau record. They move to stage B (D50).
+9. **Three more placeholders:** `OWN_CAR_AGE` 64/65, `DAYS_LAST_PHONE_CHANGE` 0 (recoded with flags); `EXT_SOURCE_2` near 0 checked and kept.
+10. **Application hour and weekday are excluded** (`exclude`, D51): they describe the process and mostly reflect region.
+11. **No earlier application is the current loan in disguise**, and the ID is not a hidden time order (checked).
 
 ## application_train (122 columns)
 
 | Column | Stage | Verdict | Missing % | Min | Max | 365243 | After appl. | Proxy risk | Rule / evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `SK_ID_CURR` | - | `key` | 0 | 100,002 | 456,255 |  |  |  | Unit of prediction; split by it |
+| `SK_ID_CURR` | - | `key` | 0 | 100,002 | 456,255 |  |  |  | Unit of prediction. The split groups IDs by person (588 people have two IDs; D49). Not a hidden time order: default 7.9-8.3% and mean EXT_SOURCE_3 flat across ID deciles |
 | `TARGET` | - | `label` | 0 | 0 | 1 |  |  |  | Payment difficulty on early instalments, not write-off (D18) |
 | `NAME_CONTRACT_TYPE` | A | `ok` | 0 |  |  |  |  |  | Application form or Home Credit's own data on the application day |
 | `CODE_GENDER` | - | `protected` | 0 |  |  |  |  |  | Exclude from inputs; 4 rows 'XNA' set to missing in the fairness audit |
@@ -66,9 +71,9 @@
 | `DAYS_EMPLOYED` | A | `ok_recode` | 0 | -17,912 | 0 | 55,374 | 0 | high (age) | 365243 (55,374 rows, all pensioners or unemployed) -> missing + flag EMPLOYED_NA |
 | `DAYS_REGISTRATION` | A | `ok` | 0 | -24,672 | 0 | 0 | 0 | medium (age) | All values <= 0 (checked) |
 | `DAYS_ID_PUBLISH` | A | `ok` | 0 | -7,197 | 0 | 0 | 0 | medium (age) | All values <= 0 (checked) |
-| `OWN_CAR_AGE` | A | `ok` | 66 | 0 | 91 |  |  |  | Application form or Home Credit's own data on the application day |
+| `OWN_CAR_AGE` | A | `ok_recode` | 66 | 0 | 91 |  |  |  | Missing = no car. 64 (2,443 rows) and 65 (891 rows) against 1-2 rows at 63 and 69: codes, not ages -> missing + flag CAR_AGE_CODED |
 | `FLAG_MOBIL` | A | `ok` | 0 | 0 | 1 |  |  |  | Near-constant (fewer than 100 rows differ); drop in Phase 3 for lack of signal, not for leakage |
-| `FLAG_EMP_PHONE` | A | `ok` | 0 | 0 | 1 |  |  | high (age) | Application form or Home Credit's own data on the application day |
+| `FLAG_EMP_PHONE` | A | `ok` | 0 | 0 | 1 |  |  | high (age) | Equals 1 - EMPLOYED_NA in all but 12 rows: it is the pensioner / unemployed flag, not a phone signal. Dropped in features as a duplicate of EMPLOYED_NA |
 | `FLAG_WORK_PHONE` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
 | `FLAG_CONT_MOBILE` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
 | `FLAG_PHONE` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
@@ -77,8 +82,8 @@
 | `CNT_FAM_MEMBERS` | A | `ok` | 0 | 1 | 20 |  |  | medium (age) | Cap extreme counts (max 19 and 20) |
 | `REGION_RATING_CLIENT` | A | `ok` | 0 | 1 | 3 |  |  |  | Application form or Home Credit's own data on the application day |
 | `REGION_RATING_CLIENT_W_CITY` | A | `ok` | 0 | 1 | 3 |  |  |  | Application form or Home Credit's own data on the application day |
-| `WEEKDAY_APPR_PROCESS_START` | A | `ok` | 0 |  |  |  |  |  | Process metadata; known at application. Check it is not a channel or branch artefact |
-| `HOUR_APPR_PROCESS_START` | A | `ok` | 0 | 0 | 23 |  |  |  | Process metadata; known at application. Check it is not a channel or branch artefact |
+| `WEEKDAY_APPR_PROCESS_START` | - | `exclude` | 0 |  |  |  |  |  | Process metadata with no signal (7.8-8.4% default by weekday); excluded with the hour (D51) |
+| `HOUR_APPR_PROCESS_START` | - | `exclude` | 0 | 0 | 23 |  |  |  | Default 10-11% at 5-7 am vs 6.5% at 5 pm, but mostly region / time zone: 22% of region-3 applications start by 7 am vs 0.6% in region 1, and the gap shrinks within region. Not about the applicant; excluded (D51) |
 | `REG_REGION_NOT_LIVE_REGION` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
 | `REG_REGION_NOT_WORK_REGION` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
 | `LIVE_REGION_NOT_WORK_REGION` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
@@ -87,8 +92,8 @@
 | `LIVE_CITY_NOT_WORK_CITY` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
 | `ORGANIZATION_TYPE` | A | `ok_recode` | 0 |  |  |  |  | high (gender) | 'XNA' is the same 55,374 rows as DAYS_EMPLOYED=365243; keep as its own level |
 | `EXT_SOURCE_1` | A | `review` | 56.4 | 0.0146 | 0.9627 |  |  | high (age) | External score, provider and scoring date not documented; treat as bought at application. Strongest age proxy (r = 0.60 where present) |
-| `EXT_SOURCE_2` | A | `review` | 0.2 | 0 | 0.855 |  |  |  | External score, provider and scoring date not documented; treat as bought at application |
-| `EXT_SOURCE_3` | A | `review` | 19.8 | 0.0005 | 0.896 |  |  |  | External score, provider and scoring date not documented; treat as bought at application |
+| `EXT_SOURCE_2` | A | `review` | 0.2 | 0 | 0.855 |  |  |  | External score, provider and scoring date not documented; treat as bought at application. 202 values below 0.001 form a continuous tail (43.6% default): real low scores, kept |
+| `EXT_SOURCE_3` | B | `review` | 19.8 | 0.0005 | 0.896 |  |  |  | External score, provider and scoring date not documented. Missing for 96.9% of applicants with no bureau record vs 6.9% of the rest: bureau-derived, so stage B (D50) |
 | `APARTMENTS_AVG` | A | `ok` | 50.7 | 0 | 1 |  |  |  | Building statistics; 48-70% missing, mostly as one block (47% of rows lack all 47). Missing is informative (9.3% vs 7.0% default) |
 | `BASEMENTAREA_AVG` | A | `ok` | 58.5 | 0 | 1 |  |  |  | Building statistics; 48-70% missing, mostly as one block (47% of rows lack all 47). Missing is informative (9.3% vs 7.0% default) |
 | `YEARS_BEGINEXPLUATATION_AVG` | A | `ok` | 48.8 | 0 | 1 |  |  |  | Building statistics; 48-70% missing, mostly as one block (47% of rows lack all 47). Missing is informative (9.3% vs 7.0% default) |
@@ -138,9 +143,9 @@
 | `EMERGENCYSTATE_MODE` | A | `ok` | 47.4 |  |  |  |  |  | Building statistics; 48-70% missing, mostly as one block (47% of rows lack all 47). Missing is informative (9.3% vs 7.0% default) |
 | `OBS_30_CNT_SOCIAL_CIRCLE` | A | `review` | 0.3 | 0 | 348 |  |  |  | Defaults among the applicant's social circle; how and when it is observed is not documented |
 | `DEF_30_CNT_SOCIAL_CIRCLE` | A | `review` | 0.3 | 0 | 34 |  |  |  | Defaults among the applicant's social circle; how and when it is observed is not documented |
-| `OBS_60_CNT_SOCIAL_CIRCLE` | A | `review` | 0.3 | 0 | 344 |  |  |  | Defaults among the applicant's social circle; how and when it is observed is not documented |
+| `OBS_60_CNT_SOCIAL_CIRCLE` | A | `review` | 0.3 | 0 | 344 |  |  |  | Social-circle count, timing not documented. Correlates 0.998 with OBS_30_CNT_SOCIAL_CIRCLE: dropped in features as a duplicate |
 | `DEF_60_CNT_SOCIAL_CIRCLE` | A | `review` | 0.3 | 0 | 24 |  |  |  | Defaults among the applicant's social circle; how and when it is observed is not documented |
-| `DAYS_LAST_PHONE_CHANGE` | A | `ok` | 0 | -4,292 | 0 | 0 | 0 | medium (age) | All values <= 0 (checked) |
+| `DAYS_LAST_PHONE_CHANGE` | A | `ok_recode` | 0 | -4,292 | 0 | 0 | 0 | medium (age) | All values <= 0. 0 in 37,672 rows against 2,812 at -1 (9.7% default): a process value, not a change date -> missing + flag PHONE_CHANGE_DAY0 |
 | `FLAG_DOCUMENT_2` | A | `ok` | 0 | 0 | 1 |  |  |  | Near-constant (fewer than 100 rows differ); drop in Phase 3 for lack of signal, not for leakage |
 | `FLAG_DOCUMENT_3` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
 | `FLAG_DOCUMENT_4` | A | `ok` | 0 | 0 | 1 |  |  |  | Near-constant (fewer than 100 rows differ); drop in Phase 3 for lack of signal, not for leakage |
@@ -161,12 +166,12 @@
 | `FLAG_DOCUMENT_19` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
 | `FLAG_DOCUMENT_20` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
 | `FLAG_DOCUMENT_21` | A | `ok` | 0 | 0 | 1 |  |  |  | Application form or Home Credit's own data on the application day |
-| `AMT_REQ_CREDIT_BUREAU_HOUR` | A | `ok` | 13.5 | 0 | 4 |  |  |  | Enquiries before the application by definition; 13.5% missing together; QRT has one value of 261, cap |
-| `AMT_REQ_CREDIT_BUREAU_DAY` | A | `ok` | 13.5 | 0 | 9 |  |  |  | Enquiries before the application by definition; 13.5% missing together; QRT has one value of 261, cap |
-| `AMT_REQ_CREDIT_BUREAU_WEEK` | A | `ok` | 13.5 | 0 | 8 |  |  |  | Enquiries before the application by definition; 13.5% missing together; QRT has one value of 261, cap |
-| `AMT_REQ_CREDIT_BUREAU_MON` | A | `ok` | 13.5 | 0 | 27 |  |  |  | Enquiries before the application by definition; 13.5% missing together; QRT has one value of 261, cap |
-| `AMT_REQ_CREDIT_BUREAU_QRT` | A | `ok` | 13.5 | 0 | 261 |  |  |  | Enquiries before the application by definition; 13.5% missing together; QRT has one value of 261, cap |
-| `AMT_REQ_CREDIT_BUREAU_YEAR` | A | `ok` | 13.5 | 0 | 25 |  |  |  | Enquiries before the application by definition; 13.5% missing together; QRT has one value of 261, cap |
+| `AMT_REQ_CREDIT_BUREAU_HOUR` | B | `ok` | 13.5 | 0 | 4 |  |  |  | Bureau enquiries before the application. Missing for 94.3% of applicants with no bureau record and 0% of the rest: bureau information, so stage B (D50). QRT has one value of 261, cap |
+| `AMT_REQ_CREDIT_BUREAU_DAY` | B | `ok` | 13.5 | 0 | 9 |  |  |  | Bureau enquiries before the application. Missing for 94.3% of applicants with no bureau record and 0% of the rest: bureau information, so stage B (D50). QRT has one value of 261, cap |
+| `AMT_REQ_CREDIT_BUREAU_WEEK` | B | `ok` | 13.5 | 0 | 8 |  |  |  | Bureau enquiries before the application. Missing for 94.3% of applicants with no bureau record and 0% of the rest: bureau information, so stage B (D50). QRT has one value of 261, cap |
+| `AMT_REQ_CREDIT_BUREAU_MON` | B | `ok` | 13.5 | 0 | 27 |  |  |  | Bureau enquiries before the application. Missing for 94.3% of applicants with no bureau record and 0% of the rest: bureau information, so stage B (D50). QRT has one value of 261, cap |
+| `AMT_REQ_CREDIT_BUREAU_QRT` | B | `ok` | 13.5 | 0 | 261 |  |  |  | Bureau enquiries before the application. Missing for 94.3% of applicants with no bureau record and 0% of the rest: bureau information, so stage B (D50). QRT has one value of 261, cap |
+| `AMT_REQ_CREDIT_BUREAU_YEAR` | B | `ok` | 13.5 | 0 | 25 |  |  |  | Bureau enquiries before the application. Missing for 94.3% of applicants with no bureau record and 0% of the rest: bureau information, so stage B (D50). QRT has one value of 261, cap |
 
 ## bureau (17 columns)
 
@@ -218,10 +223,10 @@
 | `RATE_INTEREST_PRIMARY` | C | `ok` | 99.6 | 0.0348 | 1 |  |  |  | 99.6% missing: drop for lack of data |
 | `RATE_INTEREST_PRIVILEGED` | C | `ok` | 99.6 | 0.3732 | 1 |  |  |  | 99.6% missing: drop for lack of data |
 | `NAME_CASH_LOAN_PURPOSE` | C | `ok` | 0 |  |  |  |  |  | Describes an earlier application decided before the current one |
-| `NAME_CONTRACT_STATUS` | C | `ok` | 0 |  |  |  |  |  | Outcome of an earlier, already decided application. Share refused is a strong signal (>50% refused: 15.9% default) |
+| `NAME_CONTRACT_STATUS` | C | `ok` | 0 |  |  |  |  |  | Outcome of an earlier, already decided application. Share refused is a strong signal (>50% refused: 15.9% default). Checked that no earlier row is the current loan: 648 applicants have one with the same amount and annuity (465 refused: re-applications); 1,415 had an approval in the last 7 days, default 8.3% = portfolio, so no leak |
 | `DAYS_DECISION` | C | `ok` | 0 | -2,922 | -1 | 0 | 0 |  | All <= -1: every earlier application was decided before the current one |
 | `NAME_PAYMENT_TYPE` | C | `ok` | 0 |  |  |  |  |  | Describes an earlier application decided before the current one |
-| `CODE_REJECT_REASON` | C | `ok` | 0 |  |  |  |  |  | Outcome of an earlier, already decided application. Share refused is a strong signal (>50% refused: 15.9% default) |
+| `CODE_REJECT_REASON` | C | `ok` | 0 |  |  |  |  |  | Outcome of an earlier, already decided application. Share refused is a strong signal (>50% refused: 15.9% default). Checked that no earlier row is the current loan: 648 applicants have one with the same amount and annuity (465 refused: re-applications); 1,415 had an approval in the last 7 days, default 8.3% = portfolio, so no leak |
 | `NAME_TYPE_SUITE` | C | `ok` | 49.1 |  |  |  |  |  | Describes an earlier application decided before the current one |
 | `NAME_CLIENT_TYPE` | C | `ok` | 0 |  |  |  |  |  | Describes an earlier application decided before the current one |
 | `NAME_GOODS_CATEGORY` | C | `ok` | 0 |  |  |  |  |  | Describes an earlier application decided before the current one |

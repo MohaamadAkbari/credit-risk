@@ -9,7 +9,7 @@
 | Item | Value |
 | --- | --- |
 | What it is | Consumer-loan applications to Home Credit, with the applicants' credit-bureau records and earlier Home Credit loans |
-| Unit | One loan application (`SK_ID_CURR`) |
+| Unit | One loan application (`SK_ID_CURR`). A few people have two: 588 groups of 2 applications share gender and three dates; the split keeps each person in one fold (D49) |
 | Labelled applications | 307,511 in `application_train`, 122 columns |
 | Label | `TARGET = 1`: payment difficulty (a late payment of more than X days on at least one of the first Y instalments; X and Y are not published). Not a write-off |
 | Label rate | 8.07% (24,825 applicants) |
@@ -24,7 +24,8 @@
 - **Licence / terms:** governed by the competition rules, which the account holder accepted before downloading (D27). The data is **not redistributed**: it is excluded from git by `.gitignore`, and anyone reproducing the project must download it themselves.
 - **Downloaded:** 17 November 2026 by the project owner.
 - **Archive:** `data/home-credit-default-risk.zip`, 721,616,255 bytes,
-  SHA-256 `4e7a243b13f6e3d40f682a9a0cfd59c70910ca6c5a4289f71ca1f25efbd8e3de`. If your hash differs, the numbers in this project may not match.
+  SHA-256 `4e7a243b13f6e3d40f682a9a0cfd59c70910ca6c5a4289f71ca1f25efbd8e3de`. If your hash differs, the numbers in this project may not match;
+  `make data` checks it, and `make validate` checks each CSV and the converted tables against `configs/data_contract.json` (D60).
 
 ## How to reproduce
 
@@ -36,6 +37,7 @@ unzip data/home-credit-default-risk.zip -d data/home-credit-default-risk/
 # 2. Install the package, then rebuild everything behind the Phase 2 reports
 make install
 make interim     # raw CSV -> compact Parquet in data/interim (about 1 minute, 513 MB)
+make validate    # rules, plus a check that this is the release recorded in configs/data_contract.json
 make leakage     # configs/feature_availability.csv and reports/leakage_table.md
 make eda         # re-executes notebooks/01_eda.ipynb
 ```
@@ -50,7 +52,7 @@ Dependencies are declared in `pyproject.toml`.
 | --- | --- | --- |
 | `data/home-credit-default-risk/` | The 10 original CSVs | Raw, **never edited** |
 | `data/interim/` | One Parquet file per table, made by `make interim`; IDs int32, other numbers float32, text as strings | Derived, rebuildable, not cleaned. float32 keeps about 7 significant digits: fine for exploration; Phase 3 features read the raw values |
-| `data/processed/` | (Phase 3) model-ready features | — |
+| `data/processed/` | `split.parquet`, `features_{A,B,C}.parquet`, `audit.parquet` (made by `make split features`) | Derived, rebuildable; the split is locked by `configs/split_manifest.json` |
 
 ## Tables and how they join
 
@@ -85,24 +87,29 @@ back up to 96 months in the monthly tables and 2,922 days (8 years) for earlier 
 Every past event is on or before the application date; the only positive dates are planned end dates of running
 credits and 17 bureau update records (dropped). Details: `reports/leakage_table.md`.
 
+The application ID does not hide a time order either: across ID deciles the default rate (7.9–8.3%), the mean of
+`EXT_SOURCE_3` and the share of revolving loans are flat. A random split is the only option (D20).
+
 ## Population and known biases
 
 | Bias | Evidence | Consequence |
 | --- | --- | --- |
 | **Only granted loans have labels** | Every row has a repayment outcome; earlier applications show Home Credit refuses 17.4% | The model never sees people the lender turned down (reject inference, documented as a limit) |
-| Thin-file applicants are riskier | 14.3% have no bureau record; they default at 10.1% vs 7.7% | Reported as a separate slice (D30) |
+| Thin-file applicants are riskier, and lack the strongest score | 14.3% have no bureau record; they default at 10.1% vs 7.7%. `EXT_SOURCE_3` is missing for 96.9% of them (6.9% of others), bureau-enquiry counts for 94.3%; they skew young (7.7% under 25 vs 3.4%) | Reported as a separate slice, together with age (D30, D56); bureau-derived columns at stage B (D50) |
 | Gender imbalance | 65.8% women; default 7.0% (women) vs 10.1% (men); 4 rows "XNA" | Fairness audit on outcomes (D15) |
 | Age gradient | Default falls from 12.3% (under 25) to 3.7% (65+) | Fairness audit by age band |
-| Product mix | 90.5% cash loans; revolving loans 9.5% train but 0.9% in Kaggle's test | Kaggle test is not our test set (D20); usable as a shifted population for drift tests |
-| Pensioners coded as a placeholder | 55,374 rows have `DAYS_EMPLOYED = 365243`; all pensioners or unemployed | Recode plus flag; it is a strong age proxy |
+| Product mix and loan terms | 90.5% cash loans; revolving loans 9.5% train but 0.9% in Kaggle's test, whose loans are also shorter (median 16.3 vs 20.0 months); a model tells the two files apart with ROC-AUC 0.887 | Kaggle test is not our test set (D20); usable as a strongly shifted population for drift tests (D41) |
+| Loan size | Default is hump-shaped in the amount (6.1% for the largest fifth, 10.1% in the middle); 7.52% weighted by amount | Profit weighted by amount (D54, ADR 0003) |
+| Pensioners coded as a placeholder | 55,374 rows have `DAYS_EMPLOYED = 365243`; all pensioners or unemployed; `FLAG_EMP_PHONE = 0` marks the same rows | Recode plus flag; it is a strong age proxy |
 
 ## Sensitive attributes and proxies
 
 `CODE_GENDER` and `DAYS_BIRTH` are excluded from the model inputs and kept for the fairness audit (D23). The other
 columns, however, recover them: a model predicts gender with ROC-AUC 0.89 and age with R² 0.72 (about 5 years mean
 error) from the remaining main-table columns. The strongest proxies are occupation, organisation type and car
-ownership (gender), and `FLAG_EMP_PHONE`, `FLAG_DOCUMENT_6`, number of children and `EXT_SOURCE_1` (age). Excluding the
-attributes therefore does not make the model blind to them; fairness must be checked on outcomes.
+ownership (gender), and `FLAG_EMP_PHONE`, `FLAG_DOCUMENT_6`, number of children and `EXT_SOURCE_1` (age). `FLAG_EMP_PHONE`
+is in effect pension status (it equals the pensioner marker in all but 12 rows), so the main age proxy is income type.
+Excluding the attributes therefore does not make the model blind to them; fairness must be checked on outcomes.
 
 Other attributes that some jurisdictions treat as sensitive are present and used as inputs: family status, number of
 children, housing type, region rating. They are flagged for the governance pack in Phase 10.
@@ -110,11 +117,17 @@ children, housing type, region rating. They are flagged for the governance pack 
 ## Data quality summary
 
 - 67 of 122 main-table columns have missing values; 49 are more than 40% missing. The 47 building-statistics columns are missing together for 47.4% of applicants, and missingness carries signal (9.3% vs 7.0% default).
-- Placeholders: 365243 ("no date") in `DAYS_EMPLOYED` and five `previous_application` date columns; `XNA` and `XAP` codes in several categorical columns; `-1` in `SELLERPLACE_AREA`; 0 in `AMT_CREDIT` for refused earlier applications.
+- Placeholders: 365243 ("no date") in `DAYS_EMPLOYED` and five `previous_application` date columns; `XNA` and `XAP` codes in several categorical columns; `-1` in `SELLERPLACE_AREA`; 0 in `AMT_CREDIT` for refused earlier applications; 64 and 65 in `OWN_CAR_AGE` (3,334 rows); 0 in `DAYS_LAST_PHONE_CHANGE` (37,672 rows). `EXT_SOURCE_2` values near 0 were checked and are real (D55). Kaggle's test file has one region rating of −1 (recoded to missing, D60).
 - Errors and outliers: one income of 117,000,000; 134 bureau end dates about 110 years in the past; 20 bureau credits that end before they start; 392 instalments paid more than a year early.
 - Near-constant columns: `FLAG_MOBIL` and six document flags differ in fewer than 100 rows.
+- Near-duplicates: `OBS_30` / `OBS_60_CNT_SOCIAL_CIRCLE` (r = 0.998), `AMT_CREDIT` / `AMT_GOODS_PRICE` (0.987), the two region ratings (0.951), `FLAG_EMP_PHONE` / the employment marker.
+- Process fields: application hour and weekday, excluded from inputs (D51).
 
-Full list with counts: `notebooks/01_eda.ipynb`, section 4. Handling rules: `reports/leakage_table.md`.
+Full list with counts: `notebooks/01_eda.ipynb`, sections 4 and 10. Handling rules: `reports/leakage_table.md`.
+
+## Column dictionary
+
+What each of the 218 columns is (group, kind, unit, description, range, levels, missing share, information value, Kaggle's note, and how to chart it): `reports/data_dictionary.md`, machine-readable in `configs/data_dictionary.csv` (`make dictionary`).
 
 ## Intended use
 

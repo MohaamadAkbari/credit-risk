@@ -1,0 +1,215 @@
+<meta name="dash-one-writer">
+<style>
+.cr { font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+.cr h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0 0 var(--cds-gap-sm); }
+.cr h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-xl) 0 var(--cds-gap-xs); }
+.cr h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-xs); }
+.cr p { margin: 0 0 var(--cds-gap-sm); line-height: 1.5; max-width: 75ch; }
+.cr .cr-lede { font-size: var(--cds-font-size-body); }
+.cr .cr-muted, .cr .cr-cap { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.cr .cr-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); }
+.cr .cr-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--cds-gap-md); margin: var(--cds-gap-md) 0; }
+.cr .cr-tile .cr-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; display: block; margin: var(--cds-gap-xs) 0; }
+.cr .cr-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--cds-gap-md); }
+.cr .cr-grid4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--cds-gap-md); }
+.cr .cr-chart { position: relative; min-height: 220px; }
+.cr .cr-chart.cr-tall { min-height: 420px; }
+.cr .cr-chart svg text { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); }
+.cr .cr-chart svg text.cr-val { fill: var(--color-fg); font-variant-numeric: tabular-nums; }
+.cr .cr-chart svg .tick line, .cr .cr-chart svg .domain { stroke: var(--cds-chart-axis); }
+.cr .cr-chart svg .cr-gridline line { stroke: var(--cds-chart-grid); }
+.cr .cr-tip { position: absolute; pointer-events: none; z-index: 5; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: var(--cds-pad-sm); font-size: var(--cds-font-size-caption); color: var(--cds-text-secondary); max-width: 260px; }
+.cr .cr-tip .cr-tip-h { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.cr .cr-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-bottom: var(--cds-gap-xs); }
+.cr .cr-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.cr .cr-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.cr .cr-controls { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; margin: var(--cds-gap-sm) 0; }
+.cr .cr-search { font: inherit; color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 6px 10px; min-width: 180px; }
+.cr .cr-tablewrap { overflow-x: auto; }
+.cr .cr-scroll { max-height: 560px; overflow-y: auto; }
+.cr table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); }
+.cr th, .cr td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.cr th { color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); position: sticky; top: 0; background: var(--color-panel); }
+.cr td.cr-n, .cr th.cr-n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cr code { font-size: 0.95em; }
+.cr .cr-fail { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.cr details { margin-top: var(--cds-gap-xl); }
+.cr summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); }
+.cr dl { display: grid; grid-template-columns: minmax(140px, max-content) 1fr; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); }
+.cr dt { font-weight: var(--cds-font-weight-medium); }
+.cr dd { margin: 0; color: var(--color-fg-muted); }
+@media print { .cr .cr-scroll { max-height: none; overflow: visible; } .cr .cr-controls { display: none; } }
+</style>
+
+<div class="cr">
+<header id="top">
+  <h1>Credit risk: what the data says</h1>
+  <p class="cr-lede"><b data-draw="num" data-source="overview" data-field="value" data-where="metric=default_rate" data-fmt="pct2">—</b> of <b data-draw="num" data-source="overview" data-field="value" data-where="metric=applications" data-fmt="int">—</b> past loan applicants had payment difficulty; weighted by loan amount it is <b data-draw="num" data-source="overview" data-field="value" data-where="metric=default_rate_amount" data-fmt="pct2">—</b>. Applicants with no credit-bureau record, the group the business wants to grow, default at <b data-draw="num" data-source="thin_file" data-field="thin_file" data-where="metric=Default rate" data-fmt="pct">—</b> against <b data-draw="num" data-source="thin_file" data-field="has_bureau" data-where="metric=Default rate" data-fmt="pct">—</b>, and most of them lack the strongest external score.</p>
+  <p class="cr-muted">Home Credit Default Risk data (Kaggle), Phase 2 of project P01. "Default" here means payment difficulty on early instalments, not a write-off. Amounts are in an unnamed currency. Every figure is computed from the data; open Sources to see how.</p>
+</header>
+
+<section id="kpis" class="cr-tiles">
+  <div class="cr-card cr-tile"><span class="cr-muted">Labelled applications</span><span class="cr-big" data-draw="num" data-source="overview" data-field="value" data-where="metric=applications" data-fmt="int">—</span><span class="cr-cap">one row per application</span></div>
+  <div class="cr-card cr-tile"><span class="cr-muted">Default rate</span><span class="cr-big" data-draw="num" data-source="overview" data-field="value" data-where="metric=default_rate" data-fmt="pct2">—</span><span class="cr-cap">share of applicants with payment difficulty</span></div>
+  <div class="cr-card cr-tile"><span class="cr-muted">Default rate by loan amount</span><span class="cr-big" data-draw="num" data-source="overview" data-field="value" data-where="metric=default_rate_amount" data-fmt="pct2">—</span><span class="cr-cap">large loans default less</span></div>
+  <div class="cr-card cr-tile"><span class="cr-muted">Thin file</span><span class="cr-big" data-draw="num" data-source="overview" data-field="value" data-where="metric=thin_file_share" data-fmt="pct">—</span><span class="cr-cap">applicants with no bureau record</span></div>
+  <div class="cr-card cr-tile"><span class="cr-muted">Columns</span><span class="cr-big" data-draw="num" data-source="overview" data-field="value" data-where="metric=columns_training" data-fmt="int">—</span><span class="cr-cap">across the seven training tables</span></div>
+  <div class="cr-card cr-tile"><span class="cr-muted">Rows</span><span class="cr-big" data-draw="num" data-source="overview" data-field="value" data-where="metric=rows_all_tables" data-fmt="si">—</span><span class="cr-cap">in <span data-draw="num" data-source="overview" data-field="value" data-where="metric=tables" data-fmt="int">—</span> tables</span></div>
+</section>
+
+<section id="data-map">
+  <h2>The eight tables and how they join</h2>
+  <p>The main table has one row per application. Two related tables, credits at other lenders and earlier Home Credit applications, join on the applicant ID; four monthly or instalment tables hang off those credits and loans. Kaggle's test file has the same columns as the main table but no outcome. Coverage is the share of labelled applicants with at least one row.</p>
+  <div class="cr-card cr-tablewrap">
+    <table id="tables-table" data-source="tables" data-row-key="table">
+      <thead><tr><th data-field="table">Table</th><th data-field="one_row_is">One row is</th><th class="cr-n" data-field="rows">Rows</th><th class="cr-n" data-field="columns">Columns</th><th class="cr-n" data-field="train_applicants_with_rows_pct">Applicants covered</th></tr></thead>
+      <tbody data-draw="tables-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="columns">
+  <h2>What the columns are</h2>
+  <p>Each column belongs to a business family (its <i>group</i>) and holds one kind of value. The kind decides how a column is read and charted: amounts on a log scale, day counts as years before the application, scores as deciles, categories as bars sorted by risk.</p>
+  <div class="cr-grid2">
+    <div class="cr-card">
+      <h3 id="groups-title">Columns per group, by kind of value</h3>
+      <div id="groups-chart" class="cr-chart cr-tall" data-draw="groups-chart" data-source="column_groups"></div>
+    </div>
+    <div class="cr-card cr-tablewrap">
+      <h3 id="kinds-title">Kinds of value and how each is charted</h3>
+      <table id="kinds-table" data-source="column_kinds" data-row-key="kind">
+        <thead><tr><th data-field="kind">Kind</th><th data-field="unit">Unit</th><th class="cr-n" data-field="columns">Columns</th><th data-field="chart">How it is charted</th></tr></thead>
+        <tbody data-draw="kinds-body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="dictionary">
+  <h2>Data dictionary</h2>
+  <p>Every column with its meaning (Kaggle's description), unit, typical range (1st to 99th percentile and median, with placeholder codes removed), the most common levels for text columns, how much is missing, and its information value (IV) against default on the training fold. IV is shown for main-table columns; the related tables enter the model through aggregated features.</p>
+  <div class="cr-controls">
+    <select class="dash-select" data-draw="dict-table" aria-label="Table" data-source="dictionary"></select>
+    <select class="dash-select" data-draw="dict-group" aria-label="Group" data-source="dictionary"></select>
+    <input class="cr-search" type="search" placeholder="Search columns or descriptions" aria-label="Search columns">
+    <span class="cr-muted">Showing <b data-draw="dict-count">—</b> columns</span>
+  </div>
+  <div class="cr-card cr-tablewrap cr-scroll">
+    <table id="dict-table" data-source="dictionary" data-row-key="table,column">
+      <thead><tr><th data-field="column">Column</th><th data-field="group">Group</th><th data-field="kind">Kind</th><th data-field="description">Meaning</th><th data-field="range">Range or top levels</th><th class="cr-n" data-field="missing_pct">Missing %</th><th class="cr-n" data-field="iv_train">IV</th><th data-field="special">Kaggle note</th></tr></thead>
+      <tbody data-draw="dict-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="segments">
+  <h2>Who defaults</h2>
+  <p>Default rate by applicant segment, with the number of applicants. The dashed line is the portfolio rate. Risk falls steadily with age, and no large segment sits above the 16.7% break-even risk: profit comes from separating individuals, not from excluding groups.</p>
+  <div class="cr-controls"><select class="dash-select" data-draw="seg-select" aria-label="Segment" data-source="segments"></select></div>
+  <div class="cr-card"><div id="seg-chart" class="cr-chart" data-draw="seg-chart" data-source="segments overview"></div></div>
+</section>
+
+<section id="distributions">
+  <h2>How each input is distributed, and how risk moves with it</h2>
+  <p>Bars show how many applicants fall in each range (a histogram); the line shows the default rate in that range, drawn where a range holds at least 200 applicants. Amounts use a log scale. Pick an input:</p>
+  <div class="cr-controls"><select class="dash-select" data-draw="dist-select" aria-label="Input" data-source="distributions"></select></div>
+  <div class="cr-card">
+    <div class="cr-legend" id="dist-legend"><span><i data-draw="swatch" data-i="0"></i>Applicants per range</span><span><i data-draw="swatch" data-i="1"></i>Default rate</span></div>
+    <div id="dist-chart" class="cr-chart" data-draw="dist-chart" data-source="distributions"></div>
+    <p class="cr-cap">Median <b data-draw="dist-median" data-source="distributions" data-field="median">—</b> <span data-draw="dist-unit">—</span>. Missing for <b data-draw="dist-miss" data-source="distributions" data-field="missing_share">—</b> of applicants<span class="cr-missrate-wrap">, whose default rate is <b data-draw="dist-missrate" data-source="distributions" data-field="missing_default_rate">—</b></span>.</p>
+  </div>
+</section>
+
+<section id="loan">
+  <h2>Loan size and length</h2>
+  <p>Default rate in each fifth of applicants. Risk is highest for mid-sized loans and loans of 15 to 22 months, and climbs steeply when the loan exceeds the price of the goods. These shapes are why profit is counted per unit of money lent, and why loan amount and term get no forced one-way (monotone) rule in the model.</p>
+  <div class="cr-grid4">
+    <div class="cr-card"><h3>Loan amount</h3><div class="cr-chart" data-draw="loan-panel" data-var="AMT_CREDIT" data-source="loan_size_term"></div></div>
+    <div class="cr-card"><h3>Loan term (months)</h3><div class="cr-chart" data-draw="loan-panel" data-var="CREDIT_TERM" data-source="loan_size_term"></div></div>
+    <div class="cr-card"><h3>Loan amount / goods price</h3><div class="cr-chart" data-draw="loan-panel" data-var="CREDIT_GOODS" data-source="loan_size_term"></div></div>
+    <div class="cr-card"><h3>Annuity / income</h3><div class="cr-chart" data-draw="loan-panel" data-var="ANNUITY_INCOME" data-source="loan_size_term"></div></div>
+  </div>
+</section>
+
+<section id="missing">
+  <h2>Missing data carries information</h2>
+  <p>For each main-table column with gaps: the default rate when the value is missing and when it is present, with the share missing on the right. The 47 building-statistics columns are missing together, so one stands for them. The third external score and the bureau-enquiry counts are missing almost only for thin-file applicants, so their gap is really "no credit history".</p>
+  <div class="cr-card"><div id="missing-chart" class="cr-chart cr-tall" data-draw="missing-chart" data-source="missing_view"></div></div>
+</section>
+
+<section id="signals">
+  <h2>Strongest single signals</h2>
+  <p>Information value (IV) of the 25 strongest model inputs, measured on the training fold only. A common reading: under 0.02 none, 0.02 to 0.1 weak, 0.1 to 0.3 medium, over 0.3 strong; the dashed lines mark 0.1 and 0.3. The external scores lead; the bureau and earlier-loan tables add many weaker but distinct signals.</p>
+  <div class="cr-card"><div id="signals-chart" class="cr-chart cr-tall" data-draw="signals-chart" data-source="signals"></div></div>
+</section>
+
+<section id="thin">
+  <h2>Thin-file applicants</h2>
+  <p>Applicants with no record in the credit bureau. They are riskier, younger, and lack most bureau-derived information, so the model will rank them less well than others.</p>
+  <div class="cr-card cr-tablewrap">
+    <table id="thin-table" data-source="thin_file" data-row-key="metric">
+      <thead><tr><th data-field="metric">Measure</th><th class="cr-n" data-field="has_bureau">Has bureau record</th><th class="cr-n" data-field="thin_file">Thin file</th></tr></thead>
+      <tbody data-draw="thin-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="fairness">
+  <h2>Fairness: gender and age</h2>
+  <p>Gender and age are left out of the model's inputs but kept to audit its decisions. Default rates differ by both, and the other columns can largely reconstruct them, so fairness must be measured on outcomes. Every cell below is large enough to measure (point at a cell for its 95% margin).</p>
+  <div class="cr-grid2">
+    <div class="cr-card"><h3>Default rate by gender and age band</h3><div id="fair-chart" class="cr-chart" data-draw="fair-chart" data-source="fairness"></div></div>
+    <div class="cr-card">
+      <h3>Can the other columns recover them?</h3>
+      <p><span class="cr-muted">Gender, ROC-AUC (0.5 = no information)</span><br><span class="cr-big" data-draw="num" data-source="proxies" data-field="value" data-where="attribute=Gender" data-fmt="dec3">—</span><br><span class="cr-cap">Main proxies: <span data-draw="num" data-source="proxies" data-field="strongest_proxies" data-where="attribute=Gender" data-fmt="text">—</span></span></p>
+      <p><span class="cr-muted">Age, R² (0 = no information)</span><br><span class="cr-big" data-draw="num" data-source="proxies" data-field="value" data-where="attribute=Age" data-fmt="dec3">—</span><br><span class="cr-cap">Main proxies: <span data-draw="num" data-source="proxies" data-field="strongest_proxies" data-where="attribute=Age" data-fmt="text">—</span></span></p>
+    </div>
+  </div>
+</section>
+
+<section id="drift">
+  <h2>How different is a new population?</h2>
+  <p>Kaggle's unlabelled test file stands in for future applicants. A model can tell it apart from the training file almost perfectly, mostly through shorter loans and bureau enquiries recorded in different time windows. It is used to rehearse drift monitoring, not to measure accuracy.</p>
+  <div class="cr-card cr-tablewrap">
+    <table id="drift-table" data-source="drift" data-row-key="metric">
+      <thead><tr><th data-field="metric">Measure</th><th class="cr-n" data-field="training">Training file</th><th class="cr-n" data-field="kaggle_test">Kaggle test</th></tr></thead>
+      <tbody data-draw="drift-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="quality">
+  <h2>Data quality and leakage checks</h2>
+  <p>Every column was checked for whether it was known on the application date; only 17 bureau rows were dated later, and they are dropped. Placeholder codes, errors and structural quirks are listed with how the pipeline handles them.</p>
+  <div class="cr-grid2">
+    <div class="cr-card"><h3>Leakage verdicts for all columns</h3><div id="verdict-chart" class="cr-chart" data-draw="verdict-chart" data-source="column_verdicts"></div></div>
+    <div class="cr-card cr-tablewrap">
+      <h3>Issues found and how they are handled</h3>
+      <table id="quality-table" data-source="quality" data-row-key="issue">
+        <thead><tr><th data-field="type">Type</th><th data-field="issue">Issue</th><th class="cr-n" data-field="rows">Rows</th><th data-field="handling">Handling</th></tr></thead>
+        <tbody data-draw="quality-body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<details id="definitions">
+  <summary>Definitions and methods</summary>
+  <dl>
+    <dt>Default</dt><dd>TARGET = 1: a late payment beyond an unpublished threshold on one of the first instalments. Payment difficulty, not a write-off.</dd>
+    <dt>Weighted by loan amount</dt><dd>Each loan counts by its amount, so the rate answers "what share of the money lent went to applicants with payment difficulty".</dd>
+    <dt>Thin file</dt><dd>No record in the credit-bureau table.</dd>
+    <dt>Information value (IV)</dt><dd>How strongly one input separates defaulters from others, computed over deciles of the input with missing values as their own group, on the training fold only.</dd>
+    <dt>Days and months</dt><dd>All dates are counts relative to the application day; the dictionary shows them as years or months before it. 365243 means "no date" and is excluded.</dd>
+    <dt>Normalised scores</dt><dd>External scores and building statistics are scaled to 0–1 by the data provider; their units are unknown.</dd>
+    <dt>Ranges</dt><dd>1st to 99th percentile with the median, so a few extreme values do not hide the typical range.</dd>
+    <dt>Histograms</dt><dd>20 equal ranges between the 0.5th and 99.5th percentile (log-spaced for amounts); values beyond fall in the end ranges.</dd>
+    <dt>Break-even risk 16.7%</dt><dd>With the placeholder economics (12% margin, 60% loss given default), approving pays below this probability of default.</dd>
+    <dt>Scope</dt><dd>Descriptive figures use all labelled applications, as in the EDA; the IV values use the training fold only, so the held-out test set stays unseen.</dd>
+  </dl>
+</details>
+</div>
+
+<script src="cr-core.js"></script>
+<script src="cr-charts.js"></script>

@@ -1,0 +1,36 @@
+{
+  "seed": 42,
+  "shares": {
+    "train": 0.7,
+    "valid": 0.15,
+    "test": 0.15
+  },
+  "stratified_on": "TARGET (any default per person)",
+  "unit": "person group of SK_ID_CURR",
+  "person_key": [
+    "CODE_GENDER",
+    "DAYS_BIRTH",
+    "DAYS_ID_PUBLISH",
+    "DAYS_REGISTRATION"
+  ],
+  "folds": {
+    "train": {
+      "rows": 215251,
+      "defaults": 17374,
+      "default_rate": 0.08072,
+      "sha256_ids": "537c310581fc7145d6dd8cd28083ea584cfd2756fb226e2146b120fc4938d424"
+    },
+    "valid": {
+      "rows": 46133,
+      "defaults": 3725,
+      "default_rate": 0.08074,
+      "sha256_ids": "23c5818c239da69d833a072014ccd5ea362572fb162ba84d13939d4946b20f9e"
+    },
+    "test": {
+      "rows": 46127,
+      "defaults": 3726,
+      "default_rate": 0.08078,
+      "sha256_ids": "0f56fe04d51a1a68ad847c13e3cfeb86096323c6ac10f33d1203f33779d0ea46"
+    }
+  }
+}

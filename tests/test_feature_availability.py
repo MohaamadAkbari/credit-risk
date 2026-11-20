@@ -11,7 +11,7 @@ import pytest
 from credit_risk.data.availability import VERDICTS
 
 CSV = Path(__file__).resolve().parents[1] / "configs" / "feature_availability.csv"
-NOT_FEATURES = {"key", "label", "protected"}
+NOT_FEATURES = {"key", "label", "protected", "exclude"}
 
 
 @pytest.fixture(scope="module")
@@ -44,7 +44,16 @@ def test_label_and_protected_attributes_never_enter_the_model(table):
 def test_feature_columns_have_an_ablation_stage(table):
     feats = table[~table.verdict.isin(NOT_FEATURES)]
     assert set(feats.stage) <= {"A", "B", "C"}
-    assert (feats[feats.table == "application_train"].stage == "A").all()
+    app = feats[feats.table == "application_train"].set_index("column").stage
+    bureau_derived = {"EXT_SOURCE_3", *[f"AMT_REQ_CREDIT_BUREAU_{p}" for p in ("HOUR", "DAY", "WEEK", "MON", "QRT", "YEAR")]}
+    assert set(app[app == "B"].index) == bureau_derived          # D50
+    assert set(app[app != "B"]) == {"A"}
+
+
+def test_process_fields_are_excluded(table):
+    app = table[table.table == "application_train"].set_index("column")
+    assert app.loc["HOUR_APPR_PROCESS_START", "verdict"] == "exclude"           # D51
+    assert app.loc["WEEKDAY_APPR_PROCESS_START", "verdict"] == "exclude"
 
 
 def test_dates_after_the_application_are_explained(table):
